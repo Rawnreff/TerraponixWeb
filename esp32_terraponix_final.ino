@@ -20,8 +20,7 @@ const char* password = "mengedepankanakal";
 
 // API Configuration - GANTI IP SESUAI IP LAPTOP ANDA
 // Cara mendapatkan IP: Windows=ipconfig, Linux/Mac=ifconfig
-
-const char* serverUrl = "http://172.30.0.2:8000/api/v1";  // IP laptop + port Laravel 
+const char* serverUrl = "http://192.168.1.5:8000/api/v1";  // IP laptop + port Laravel
 const char* apiKey = ""; // Kosongkan jika tidak ada API key
 
 DHT dht(DHTPIN, DHTTYPE);
