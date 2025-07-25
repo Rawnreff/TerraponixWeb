@@ -6,6 +6,11 @@ use App\Http\Controllers\Api\DeviceController;
 use App\Http\Controllers\Api\SensorController;
 use App\Http\Controllers\Api\ActuatorController;
 
+// Simple test route
+Route::get('/test', function () {
+    return response()->json(['message' => 'API is working!', 'timestamp' => now()]);
+});
+
 Route::prefix('v1')->group(function() {
     // Device endpoints
     Route::get('/devices', [DeviceController::class, 'index']);
@@ -22,3 +27,7 @@ Route::prefix('v1')->group(function() {
     Route::get('/devices/{device}/actuator-status', [ActuatorController::class, 'status']);
     Route::post('/actuator/control', [ActuatorController::class, 'control']);
 });
+
+// Additional simple endpoints without v1 prefix for testing
+Route::get('/devices', [DeviceController::class, 'index']);
+Route::get('/sensor-data/latest', [SensorController::class, 'latest']);
