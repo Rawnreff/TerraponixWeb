@@ -17,8 +17,12 @@ Route::prefix('v1')->group(function() {
     Route::post('/sensor-data', [SensorController::class, 'store']);
     Route::get('/sensor-data/latest', [SensorController::class, 'latest']);
     Route::get('/sensor-data/history', [SensorController::class, 'history']);
+    Route::get('/sensor-data/stats', [SensorController::class, 'stats']);
     
     // Actuator control endpoints
     Route::get('/devices/{device}/actuator-status', [ActuatorController::class, 'status']);
+    Route::get('/actuator-status', function() {
+        return app(ActuatorController::class)->status(1);
+    });
     Route::post('/actuator/control', [ActuatorController::class, 'control']);
 });

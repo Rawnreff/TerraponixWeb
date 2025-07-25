@@ -1,228 +1,177 @@
 @extends('layouts.app')
 
+@section('page-title', 'Actuator Control')
+@section('page-description', 'Control greenhouse actuators and systems')
+
 @section('content')
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Actuator Control</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" id="auto-mode-switch">
-            <label class="form-check-label" for="auto-mode-switch">Auto Mode</label>
+<div data-page="actuator-control" class="space-y-6">
+    <!-- Status Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Curtain Status -->
+        <div class="control-panel">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">
+                    <i class="bi bi-arrows-expand mr-2"></i>
+                    Curtain Position
+                </h3>
+                <span id="curtain-status" class="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                    Manual
+                </span>
+            </div>
+            <div class="space-y-4">
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-gray-900" id="curtain-position">50%</div>
+                    <div class="text-sm text-gray-500">Current Position</div>
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700">Set Position</label>
+                    <input type="range" id="curtain-slider" min="0" max="100" value="50" 
+                           class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider">
+                    <div class="flex justify-between text-xs text-gray-500">
+                        <span>Closed</span>
+                        <span>Open</span>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <button class="btn-secondary flex-1" id="curtain-close">
+                        <i class="bi bi-arrow-left mr-1"></i>Close
+                    </button>
+                    <button class="btn-primary flex-1" id="curtain-open">
+                        <i class="bi bi-arrow-right mr-1"></i>Open
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fan Control -->
+        <div class="control-panel">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">
+                    <i class="bi bi-fan mr-2"></i>
+                    Exhaust Fan
+                </h3>
+                <span id="fan-status" class="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                    OFF
+                </span>
+            </div>
+            <div class="space-y-4">
+                <div class="flex items-center justify-center">
+                    <button id="fan-toggle" class="toggle-switch inactive" data-state="off">
+                        <span class="toggle-button inactive"></span>
+                    </button>
+                </div>
+                <div class="text-center">
+                    <div class="text-lg font-medium text-gray-900" id="fan-mode">Manual Control</div>
+                    <div class="text-sm text-gray-500">Click to toggle</div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="text-center p-2 bg-gray-50 rounded-lg">
+                        <div class="text-sm font-medium text-gray-900" id="fan-runtime">0h 0m</div>
+                        <div class="text-xs text-gray-500">Runtime Today</div>
+                    </div>
+                    <div class="text-center p-2 bg-gray-50 rounded-lg">
+                        <div class="text-sm font-medium text-gray-900" id="fan-cycles">0</div>
+                        <div class="text-xs text-gray-500">Cycles</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Water Pump Control -->
+        <div class="control-panel">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">
+                    <i class="bi bi-droplet mr-2"></i>
+                    Water Pump
+                </h3>
+                <span id="pump-status" class="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                    OFF
+                </span>
+            </div>
+            <div class="space-y-4">
+                <div class="flex items-center justify-center">
+                    <button id="pump-toggle" class="toggle-switch inactive" data-state="off">
+                        <span class="toggle-button inactive"></span>
+                    </button>
+                </div>
+                <div class="text-center">
+                    <div class="text-lg font-medium text-gray-900" id="pump-mode">Manual Control</div>
+                    <div class="text-sm text-gray-500">Click to toggle</div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="text-center p-2 bg-gray-50 rounded-lg">
+                        <div class="text-sm font-medium text-gray-900" id="pump-flow">0 L/min</div>
+                        <div class="text-xs text-gray-500">Flow Rate</div>
+                    </div>
+                    <div class="text-center p-2 bg-gray-50 rounded-lg">
+                        <div class="text-sm font-medium text-gray-900" id="pump-volume">0 L</div>
+                        <div class="text-xs text-gray-500">Total Today</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="control-panel">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+            <i class="bi bi-lightning mr-2"></i>
+            Quick Actions
+        </h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <button class="btn-primary" id="emergency-stop">
+                <i class="bi bi-stop-circle mr-2"></i>Emergency Stop
+            </button>
+            <button class="btn-success" id="auto-mode">
+                <i class="bi bi-robot mr-2"></i>Auto Mode
+            </button>
+            <button class="btn-secondary" id="manual-mode">
+                <i class="bi bi-hand-index mr-2"></i>Manual Mode
+            </button>
+            <button class="btn-secondary" id="preset-schedule">
+                <i class="bi bi-clock mr-2"></i>Schedule
+            </button>
+        </div>
+    </div>
+
+    <!-- System Log -->
+    <div class="control-panel">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+            <i class="bi bi-journal-text mr-2"></i>
+            Recent Activity
+        </h3>
+        <div class="space-y-2" id="activity-log">
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center">
+                    <div class="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                    <span class="text-sm text-gray-900">Water pump activated</span>
+                </div>
+                <span class="text-xs text-gray-500">2 minutes ago</span>
+            </div>
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center">
+                    <div class="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                    <span class="text-sm text-gray-900">Curtain position changed to 75%</span>
+                </div>
+                <span class="text-xs text-gray-500">5 minutes ago</span>
+            </div>
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center">
+                    <div class="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
+                    <span class="text-sm text-gray-900">Fan turned off automatically</span>
+                </div>
+                <span class="text-xs text-gray-500">10 minutes ago</span>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="card mb-4">
-            <div class="card-header">
-                <i class="bi bi-blinds me-2"></i> Curtain Control
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h5>Current Position</h5>
-                        <div class="display-4 text-center" id="curtain-position">--%</div>
-                    </div>
-                    <div class="col-md-6">
-                        <h5>Manual Control</h5>
-                        <div class="btn-group w-100 mb-3" role="group">
-                            <button type="button" class="btn btn-outline-primary" onclick="controlActuator('curtain', 0)">Close</button>
-                            <button type="button" class="btn btn-outline-primary" onclick="controlActuator('curtain', 50)">50%</button>
-                            <button type="button" class="btn btn-outline-primary" onclick="controlActuator('curtain', 100)">Open</button>
-                        </div>
-                        <div class="mt-2">
-                            <label for="curtainRange" class="form-label">Set Position: <span id="curtainValue">50</span>%</label>
-                            <input type="range" class="form-range" min="0" max="100" id="curtainRange" value="50" onchange="updateCurtainValue(this.value)">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-6">
-        <div class="card mb-4">
-            <div class="card-header">
-                <i class="bi bi-fan me-2"></i> Fan Control
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h5>Current Status</h5>
-                        <div class="display-4 text-center">
-                            <span id="fan-status-text" class="badge bg-secondary p-3">OFF</span>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <h5>Manual Control</h5>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="fan-switch" onchange="controlActuator('fan', this.checked ? 1 : 0)">
-                            <label class="form-check-label" for="fan-switch">Toggle Fan</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <i class="bi bi-droplet me-2"></i> Water Pump Control
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h5>Current Status</h5>
-                        <div class="display-4 text-center">
-                            <span id="pump-status-text" class="badge bg-secondary p-3">OFF</span>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <h5>Manual Control</h5>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="pump-switch" onchange="controlActuator('water_pump', this.checked ? 1 : 0)">
-                            <label class="form-check-label" for="pump-switch">Toggle Pump</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <i class="bi bi-clock-history me-2"></i> Actuator Logs
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>Actuator</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="actuator-logs">
-                            <!-- Logs will be populated here -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-@endsection
-
-@section('scripts')
 <script>
-    function updateActuatorStatus() {
-        axios.get('/api/actuator-status')
-            .then(response => {
-                const status = response.data.data;
-                
-                // Update curtain
-                document.getElementById('curtain-position').textContent = status.curtain_position + '%';
-                document.getElementById('curtainRange').value = status.curtain_position;
-                document.getElementById('curtainValue').textContent = status.curtain_position;
-                
-                // Update fan
-                document.getElementById('fan-status-text').textContent = status.fan_status ? 'ON' : 'OFF';
-                document.getElementById('fan-status-text').className = status.fan_status ? 'badge bg-success p-3' : 'badge bg-secondary p-3';
-                document.getElementById('fan-switch').checked = status.fan_status;
-                
-                // Update pump
-                document.getElementById('pump-status-text').textContent = status.water_pump_status ? 'ON' : 'OFF';
-                document.getElementById('pump-status-text').className = status.water_pump_status ? 'badge bg-success p-3' : 'badge bg-secondary p-3';
-                document.getElementById('pump-switch').checked = status.water_pump_status;
-            })
-            .catch(error => {
-                console.error('Error fetching actuator status:', error);
-            });
+document.addEventListener('DOMContentLoaded', function() {
+    // Actuator control functionality
+    if (typeof window.Dashboard !== 'undefined') {
+        window.Dashboard.setupActuatorControls();
     }
-    
-    function updateCurtainValue(value) {
-        document.getElementById('curtainValue').textContent = value;
-        controlActuator('curtain', parseInt(value));
-    }
-    
-    function controlActuator(type, value) {
-        axios.post('/api/control-actuator', {
-            type: type,
-            value: value
-        })
-        .then(response => {
-            updateActuatorStatus();
-            addActuatorLog(type, value);
-        })
-        .catch(error => {
-            console.error('Error controlling actuator:', error);
-        });
-    }
-    
-    function addActuatorLog(type, value) {
-        const logsTable = document.getElementById('actuator-logs');
-        const now = new Date();
-        const row = document.createElement('tr');
-        
-        let actionText = '';
-        switch(type) {
-            case 'curtain':
-                actionText = `Set to ${value}%`;
-                break;
-            case 'fan':
-                actionText = value ? 'Turned ON' : 'Turned OFF';
-                break;
-            case 'water_pump':
-                actionText = value ? 'Turned ON' : 'Turned OFF';
-                break;
-        }
-        
-        row.innerHTML = `
-            <td>${now.toLocaleTimeString()}</td>
-            <td>${type.replace('_', ' ').toUpperCase()}</td>
-            <td>${actionText}</td>
-        `;
-        
-        logsTable.insertBefore(row, logsTable.firstChild);
-        
-        // Keep only the last 10 logs
-        if (logsTable.children.length > 10) {
-            logsTable.removeChild(logsTable.lastChild);
-        }
-    }
-    
-    function checkAutoMode() {
-        axios.get('/api/settings')
-            .then(response => {
-                const settings = response.data.data;
-                document.getElementById('auto-mode-switch').checked = settings.auto_mode;
-            })
-            .catch(error => {
-                console.error('Error checking auto mode:', error);
-            });
-    }
-    
-    document.addEventListener('DOMContentLoaded', function() {
-        updateActuatorStatus();
-        checkAutoMode();
-        
-        // Update status setiap 3 detik
-        setInterval(updateActuatorStatus, 3000);
-        
-        // Auto mode switch
-        document.getElementById('auto-mode-switch').addEventListener('change', function() {
-            axios.post('/api/settings', {
-                auto_mode: this.checked
-            })
-            .catch(error => {
-                console.error('Error updating auto mode:', error);
-            });
-        });
-    });
+});
 </script>
 @endsection

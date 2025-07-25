@@ -4,13 +4,27 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActuatorStatus;
+use App\Models\Device;
 use Illuminate\Http\Request;
 
 class ActuatorController extends Controller
 {
-    public function status($deviceId)
+    public function status($deviceId = null)
     {
-        $status = ActuatorStatus::where('device_id', $deviceId)->firstOrFail();
+        $deviceId = $deviceId ?? 1; // Default to device ID 1
+        
+        $status = ActuatorStatus::where('device_id', $deviceId)->first();
+        
+        // Create default status if not exists
+        if (!$status) {
+            $status = ActuatorStatus::create([
+                'device_id' => $deviceId,
+                'curtain_position' => 50,
+                'fan_status' => false,
+                'water_pump_status' => false,
+                'last_updated' => now()
+            ]);
+        }
         
         return response()->json([
             'status' => 'success',
@@ -21,22 +35,66 @@ class ActuatorController extends Controller
     public function control(Request $request)
     {
         $validated = $request->validate([
-            'device_id' => 'required|exists:devices,id',
-            'actuator_type' => 'required|in:curtain,fan,water_pump',
-            'value' => 'required'
+            'device_id' => 'sometimes|exists:devices,id',
+            'actuator' => 'required|in:curtain,fan,pump,water_pump',
+            'action' => 'required|in:on,off,toggle,set',
+            'value' => 'sometimes|numeric|min:0|max:100'
         ]);
         
-        $actuator = ActuatorStatus::where('device_id', $validated['device_id'])->firstOrFail();
+        $deviceId = $validated['device_id'] ?? 1;
         
-        switch($validated['actuator_type']) {
+        $actuator = ActuatorStatus::where('device_id', $deviceId)->first();
+        
+        // Create if not exists
+        if (!$actuator) {
+            $actuator = ActuatorStatus::create([
+                'device_id' => $deviceId,
+                'curtain_position' => 50,
+                'fan_status' => false,
+                'water_pump_status' => false,
+                'last_updated' => now()
+            ]);
+        }
+        
+        $actuatorType = $validated['actuator'];
+        $action = $validated['action'];
+        
+        // Handle pump alias
+        if ($actuatorType === 'pump') {
+            $actuatorType = 'water_pump';
+        }
+        
+        switch($actuatorType) {
             case 'curtain':
-                $actuator->curtain_position = $validated['value'];
+                if ($action === 'set' && isset($validated['value'])) {
+                    $actuator->curtain_position = $validated['value'];
+                } elseif ($action === 'on') {
+                    $actuator->curtain_position = 100;
+                } elseif ($action === 'off') {
+                    $actuator->curtain_position = 0;
+                } elseif ($action === 'toggle') {
+                    $actuator->curtain_position = $actuator->curtain_position > 50 ? 0 : 100;
+                }
                 break;
+                
             case 'fan':
-                $actuator->fan_status = (bool)$validated['value'];
+                if ($action === 'on') {
+                    $actuator->fan_status = true;
+                } elseif ($action === 'off') {
+                    $actuator->fan_status = false;
+                } elseif ($action === 'toggle') {
+                    $actuator->fan_status = !$actuator->fan_status;
+                }
                 break;
+                
             case 'water_pump':
-                $actuator->water_pump_status = (bool)$validated['value'];
+                if ($action === 'on') {
+                    $actuator->water_pump_status = true;
+                } elseif ($action === 'off') {
+                    $actuator->water_pump_status = false;
+                } elseif ($action === 'toggle') {
+                    $actuator->water_pump_status = !$actuator->water_pump_status;
+                }
                 break;
         }
         
@@ -45,7 +103,7 @@ class ActuatorController extends Controller
         
         return response()->json([
             'status' => 'success',
-            'message' => 'Actuator controlled successfully',
+            'message' => ucfirst($actuatorType) . ' controlled successfully',
             'data' => $actuator
         ]);
     }
