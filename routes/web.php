@@ -7,6 +7,8 @@ use App\Http\Controllers\ActuatorController;
 use App\Http\Controllers\SettingsController;
 
 Route::middleware(['web'])->group(function () {
+    Route::redirect('/', '/dashboard');
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/sensor-data', [SensorDataController::class, 'index'])->name('sensor.data');
     Route::get('/actuator-control', [ActuatorController::class, 'index'])->name('actuator.control');
