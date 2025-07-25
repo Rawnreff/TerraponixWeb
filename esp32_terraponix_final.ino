@@ -15,12 +15,12 @@
 #define PUMP_PIN 27     // Pin untuk pompa air
 
 // WiFi Credentials - GANTI SESUAI WIFI/HOTSPOT ANDA
-const char* ssid = "Xiaomi 14T Pro";
-const char* password = "jougen92";
+const char* ssid = "rafen's net";
+const char* password = "mengedepankanakal";
 
 // API Configuration - GANTI IP SESUAI IP LAPTOP ANDA
 // Cara mendapatkan IP: Windows=ipconfig, Linux/Mac=ifconfig
-const char* serverUrl = "http://192.168.1.100:8000/api/v1";  // IP laptop + port Laravel
+const char* serverUrl = "http://192.168.1.5:8000/api/v1";  // IP laptop + port Laravel
 const char* apiKey = ""; // Kosongkan jika tidak ada API key
 
 DHT dht(DHTPIN, DHTTYPE);
