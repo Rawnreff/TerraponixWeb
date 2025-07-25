@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\SensorReading;
+use App\Models\Device;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
