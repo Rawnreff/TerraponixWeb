@@ -17,9 +17,10 @@ Route::middleware(['web'])->group(function () {
     // API untuk frontend
     Route::prefix('api')->group(function() {
         Route::get('/latest-sensor-data', [SensorDataController::class, 'getLatestData']);
+        Route::get('/sensor-history', [SensorDataController::class, 'getHistory']);
+        Route::get('/sensor-stats', [SensorDataController::class, 'getStats']);
         Route::get('/actuator-status', [ActuatorController::class, 'getStatus']);
         Route::post('/control-actuator', [ActuatorController::class, 'control']);
-        Route::get('/sensor-history', [SensorDataController::class, 'getHistory']);
         Route::get('/settings', [SettingsController::class, 'getSettings']);
         Route::post('/settings', [SettingsController::class, 'updateSettings']);
     });

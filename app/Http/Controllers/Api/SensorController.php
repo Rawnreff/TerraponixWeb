@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\SensorReading;
+use App\Models\Device;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -26,7 +27,9 @@ class SensorController extends Controller
         
         // Update device last seen
         $device = Device::find($validated['device_id']);
-        $device->update(['last_seen' => now(), 'status' => 'online']);
+        if ($device) {
+            $device->update(['last_seen' => now(), 'status' => 'online']);
+        }
         
         return response()->json([
             'status' => 'success',
@@ -51,17 +54,25 @@ class SensorController extends Controller
     public function history(Request $request)
     {
         $validated = $request->validate([
-            'device_id' => 'required|exists:devices,id',
-            'from' => 'required|date',
-            'to' => 'required|date|after_or_equal:from',
-            'interval' => 'in:hourly,daily,weekly'
+            'device_id' => 'sometimes|exists:devices,id',
+            'from' => 'sometimes|date',
+            'to' => 'sometimes|date|after_or_equal:from',
+            'interval' => 'sometimes|in:hourly,daily,weekly',
+            'days' => 'sometimes|integer|min:1|max:30'
         ]);
         
-        $query = SensorReading::where('device_id', $validated['device_id'])
+        // Default values
+        $deviceId = $validated['device_id'] ?? 1;
+        $days = $validated['days'] ?? 1;
+        $from = $validated['from'] ?? now()->subDays($days);
+        $to = $validated['to'] ?? now();
+        
+        $query = SensorReading::where('device_id', $deviceId)
             ->whereBetween('created_at', [
-                Carbon::parse($validated['from']),
-                Carbon::parse($validated['to'])
-            ]);
+                Carbon::parse($from),
+                Carbon::parse($to)
+            ])
+            ->orderBy('created_at', 'desc');
             
         // Group by interval if needed
         if (isset($validated['interval'])) {
@@ -69,14 +80,16 @@ class SensorController extends Controller
                 case 'hourly':
                     $data = $query->selectRaw('
                         HOUR(created_at) as hour,
+                        DATE(created_at) as date,
                         AVG(temperature) as avg_temp,
                         AVG(humidity) as avg_humidity,
                         AVG(ph_value) as avg_ph,
                         AVG(light_intensity) as avg_light,
                         AVG(water_level) as avg_water_level,
                         AVG(co2_level) as avg_co2,
-                        AVG(soil_moisture) as avg_soil_moisture
-                    ')->groupBy('hour')->get();
+                        AVG(soil_moisture) as avg_soil_moisture,
+                        MIN(created_at) as created_at
+                    ')->groupBy('date', 'hour')->get();
                     break;
                     
                 case 'daily':
@@ -88,20 +101,47 @@ class SensorController extends Controller
                         AVG(light_intensity) as avg_light,
                         AVG(water_level) as avg_water_level,
                         AVG(co2_level) as avg_co2,
-                        AVG(soil_moisture) as avg_soil_moisture
+                        AVG(soil_moisture) as avg_soil_moisture,
+                        MIN(created_at) as created_at
                     ')->groupBy('date')->get();
                     break;
                     
                 default:
-                    $data = $query->get();
+                    $data = $query->take(100)->get();
             }
         } else {
-            $data = $query->get();
+            $data = $query->take(100)->get();
         }
         
         return response()->json([
             'status' => 'success',
             'data' => $data
+        ]);
+    }
+
+    public function stats()
+    {
+        $today = now()->startOfDay();
+        $yesterday = now()->subDay()->startOfDay();
+        
+        $todayCount = SensorReading::whereDate('created_at', $today)->count();
+        $averages = SensorReading::whereDate('created_at', $today)
+            ->selectRaw('
+                AVG(temperature) as avg_temp,
+                AVG(humidity) as avg_humidity,
+                AVG(ph_value) as avg_ph,
+                AVG(light_intensity) as avg_light,
+                MAX(temperature) as max_temp,
+                MIN(temperature) as min_temp
+            ')
+            ->first();
+            
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'data_points_today' => $todayCount,
+                'averages' => $averages
+            ]
         ]);
     }
 }
