@@ -642,4 +642,3 @@ setInterval(() => {
 }, 10000);
 </script>
 @endpush
->>>>>>> 55b36ba61b82073e8133455f8e7f57dc114bb069
