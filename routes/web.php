@@ -6,6 +6,11 @@ use App\Http\Controllers\SensorDataController;
 use App\Http\Controllers\ActuatorController;
 use App\Http\Controllers\SettingsController;
 
+// Redirect root to dashboard
+Route::get('/', function () {
+    return redirect()->route('dashboard');
+});
+
 Route::middleware(['web'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/sensor-data', [SensorDataController::class, 'index'])->name('sensor.data');
