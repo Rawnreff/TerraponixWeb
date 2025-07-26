@@ -32,4 +32,4 @@ class SettingsController extends Controller
         $response = Http::post(url('/api/v1/devices/1/settings'), $validated);
         return $response->json();
     }
-}
+}   
