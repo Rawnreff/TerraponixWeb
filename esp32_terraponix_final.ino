@@ -15,13 +15,12 @@
 #define PUMP_PIN 27     // Pin untuk pompa air
 
 // WiFi Credentials - GANTI SESUAI WIFI/HOTSPOT ANDA
-const char* ssid = "MSI 9071";
-const char* password = "11223344";
+const char* ssid = "hotspotkeren";  
+const char* password = "87654321";
 
 // API Configuration - GANTI IP SESUAI IP LAPTOP ANDA
-// Cara mendapatkan IP: Windows=ipconfig, Linux/Mac=ifconfig
-const char* serverUrl = "http://192.168.137.122:8000/api/v1";  // IP laptop + port Laravel
-const char* apiKey = ""; // Kosongkan jika tidak ada API key
+const char* serverUrl = "http://192.168.137.36:8000/api/v1";  
+const char* apiKey = ""; 
 
 DHT dht(DHTPIN, DHTTYPE);
 Servo servo;
@@ -29,28 +28,24 @@ Servo servo;
 // Variables
 float pH_offset = 0.0;
 unsigned long lastSensorUpdate = 0;
-const long sensorUpdateInterval = 10000; // Update setiap 10 detik
+const long sensorUpdateInterval = 10000; 
 unsigned long lastActuatorCheck = 0;
-const long actuatorCheckInterval = 5000; // Cek setiap 5 detik
+const long actuatorCheckInterval = 5000; 
 
-// Device ID - harus sesuai dengan ID di database Laravel
 const int deviceId = 1;
 
 void setup() {
   Serial.begin(115200);
   
-  // Initialize pins
   pinMode(FAN_PIN, OUTPUT);
   pinMode(PUMP_PIN, OUTPUT);
   digitalWrite(FAN_PIN, LOW);
   digitalWrite(PUMP_PIN, LOW);
   
-  // Initialize sensors and servo
   dht.begin();
   servo.attach(SERVO_PIN);
-  servo.write(90);  // Posisi awal servo (90%)
+  servo.write(90);  
   
-  // Connect to WiFi
   connectToWiFi();
   
   Serial.println("\n🌱 Sistem TERRAPONIX Started! 🌱");
@@ -60,38 +55,30 @@ void setup() {
 }
 
 void loop() {
-  // Maintain WiFi connection
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("⚠️  WiFi disconnected. Reconnecting...");
     connectToWiFi();
   }
 
-  // Handle sensor data
   if (millis() - lastSensorUpdate >= sensorUpdateInterval) {
     lastSensorUpdate = millis();
     
-    // Read all sensors
     float temp = dht.readTemperature();
     float hum = dht.readHumidity();
     int ldr_value = analogRead(LDR_PIN);
     float pH_value = read_pH();
     int water_level = analogRead(WATER_LEVEL_PIN);
     
-    // Validate sensor readings
     if (isnan(temp) || isnan(hum)) {
       Serial.println("❌ Error: Failed to read from DHT sensor!");
       temp = 0.0;
       hum = 0.0;
     }
     
-    // Send data to server
     sendSensorData(temp, hum, pH_value, ldr_value, water_level);
-    
-    // Print to serial for debugging
     printSensorData(temp, hum, pH_value, ldr_value, water_level);
   }
 
-  // Check actuator status
   if (millis() - lastActuatorCheck >= actuatorCheckInterval) {
     lastActuatorCheck = millis();
     checkActuatorStatus();
@@ -119,8 +106,6 @@ void connectToWiFi() {
     Serial.print("📶 Signal Strength: ");
     Serial.print(WiFi.RSSI());
     Serial.println(" dBm");
-    
-    // Test API connection
     testAPIConnection();
   } else {
     Serial.println("\n❌ Failed to connect to WiFi!");
@@ -174,7 +159,6 @@ void sendSensorData(float temp, float hum, float pH, int ldr, int water_level) {
   http.addHeader("Content-Type", "application/json");
   http.setTimeout(10000);
   
-  // Create JSON payload
   DynamicJsonDocument doc(1024);
   doc["device_id"] = deviceId;
   doc["temperature"] = temp;
@@ -182,10 +166,6 @@ void sendSensorData(float temp, float hum, float pH, int ldr, int water_level) {
   doc["ph_value"] = pH;
   doc["light_intensity"] = ldr;
   doc["water_level"] = water_level;
-  
-  // Uncomment jika sensor sudah terpasang
-  // doc["co2_level"] = readCO2();
-  // doc["soil_moisture"] = readSoilMoisture();
 
   String payload;
   serializeJson(doc, payload);
@@ -198,7 +178,6 @@ void sendSensorData(float temp, float hum, float pH, int ldr, int water_level) {
       String response = http.getString();
       Serial.println("✅ Data sent successfully!");
       
-      // Parse response for confirmation
       DynamicJsonDocument responseDoc(1024);
       deserializeJson(responseDoc, response);
       
@@ -207,7 +186,6 @@ void sendSensorData(float temp, float hum, float pH, int ldr, int water_level) {
       }
     } else {
       Serial.printf("⚠️  HTTP Error code: %d\n", httpCode);
-      
       if (httpCode == 404) {
         Serial.println("🔧 Check API endpoint URL");
       } else if (httpCode == 422) {
@@ -243,12 +221,10 @@ void checkActuatorStatus() {
     deserializeJson(doc, payload);
 
     if (doc["status"] == "success") {
-      // Update actuator status
       int curtainPos = doc["data"]["curtain_position"];
       bool fanStatus = doc["data"]["fan_status"];
       bool pumpStatus = doc["data"]["water_pump_status"];
 
-      // Control actuators
       servo.write(map(curtainPos, 0, 100, 0, 180));
       digitalWrite(FAN_PIN, fanStatus ? HIGH : LOW);
       digitalWrite(PUMP_PIN, pumpStatus ? HIGH : LOW);
@@ -265,22 +241,21 @@ void checkActuatorStatus() {
   http.end();
 }
 
+// Fungsi konversi pH (2.5V = pH 7.0)
 float read_pH() {
-  int pH_raw = analogRead(PH_PIN);
-  float voltage = pH_raw * (3.3 / 4095.0);
-  float pH_value = 7.0 - ((voltage - 1.65 + pH_offset) / 0.18);
-  
-  // Validasi nilai pH (0-14)
-  if (pH_value < 0) pH_value = 0;
-  if (pH_value > 14) pH_value = 14;
-  
-  return pH_value;
+  int raw = analogRead(PH_PIN);
+  float voltage = raw * (3.3 / 4095.0);
+
+  float pH = 7 + ((2.5 - voltage) * (7.0 / 2.5));
+  if (pH < 0) pH = 0;
+  if (pH > 14) pH = 14;
+
+  return pH;
 }
 
 void printSensorData(float temp, float hum, float pH, int ldr, int water_level) {
   Serial.println("\n📊 === SENSOR DATA ===");
   
-  // Temperature status
   Serial.print("🌡️  Temperature: ");
   Serial.print(temp, 1);
   Serial.print(" °C");
@@ -289,7 +264,6 @@ void printSensorData(float temp, float hum, float pH, int ldr, int water_level) 
   else Serial.print(" ✅ OK");
   Serial.println();
   
-  // Humidity status  
   Serial.print("💨 Humidity: ");
   Serial.print(hum, 1);
   Serial.print(" %");
@@ -298,7 +272,6 @@ void printSensorData(float temp, float hum, float pH, int ldr, int water_level) 
   else Serial.print(" ✅ OK");
   Serial.println();
   
-  // pH status
   Serial.print("⚗️  pH Level: ");
   Serial.print(pH, 2);
   if (pH >= 6.0 && pH <= 7.5) Serial.print(" ✅ OPTIMAL");
@@ -306,7 +279,6 @@ void printSensorData(float temp, float hum, float pH, int ldr, int water_level) 
   else Serial.print(" 🔵 ALKALINE");
   Serial.println();
   
-  // Light intensity
   Serial.print("☀️  Light: ");
   Serial.print(ldr);
   if (ldr > 3000) Serial.print(" 🌞 BRIGHT");
@@ -314,7 +286,6 @@ void printSensorData(float temp, float hum, float pH, int ldr, int water_level) 
   else Serial.print(" ✅ MODERATE");
   Serial.println();
   
-  // Water level status
   Serial.print("💧 Water Level: ");
   Serial.print(water_level);
   if (water_level < 1500) {
@@ -323,7 +294,6 @@ void printSensorData(float temp, float hum, float pH, int ldr, int water_level) 
     Serial.println(" ✅ SUFFICIENT");
   }
   
-  // System status
   Serial.print("🎪 Curtain Position: ");
   int curtainPos = map(servo.read(), 0, 180, 0, 100);
   Serial.print(curtainPos);
@@ -351,16 +321,3 @@ void printSensorData(float temp, float hum, float pH, int ldr, int water_level) 
   
   Serial.println("==================");
 }
-
-// Optional: Functions for additional sensors (uncomment when available)
-/*
-int readCO2() {
-  // CO2 sensor implementation
-  return 400; // PPM
-}
-
-int readSoilMoisture() {
-  // Soil moisture sensor implementation  
-  return analogRead(SOIL_MOISTURE_PIN);
-}
-*/
