@@ -1,61 +1,287 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🌱 Terraponix - Advanced Greenhouse IoT System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**Real-time monitoring and intelligent control system for modern greenhouse automation**
 
-## About Laravel
+## 🚀 Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### ✨ Real-time Data Management
+- **Automatic sensor data storage** from ESP32 devices
+- **Real-time data broadcasting** with caching system
+- **Live dashboard updates** every 5-10 seconds
+- **Historical data analysis** with advanced filtering
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 🎛️ Advanced Actuator Control
+- **Real-time actuator status monitoring**
+- **Bulk control operations** for multiple actuators
+- **Preset configurations** (Day Mode, Night Mode, Watering Mode, Eco Mode)
+- **Emergency stop functionality**
+- **Manual and automatic control modes**
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 📊 Modern Analytics Dashboard
+- **Interactive real-time charts** using Chart.js
+- **Multi-sensor visualization** with trend analysis
+- **Statistical overview** (min, max, average values)
+- **System health monitoring** with status indicators
+- **Responsive design** for all devices
 
-## Learning Laravel
+### 🔧 Enhanced API System
+- **RESTful API endpoints** for all operations
+- **Real-time data endpoints** for live updates
+- **Bulk control endpoints** for efficient operations
+- **Statistics and analytics endpoints**
+- **Comprehensive error handling and logging**
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 🏗️ System Architecture
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+```
+ESP32 Sensors → Laravel API → Real-time Frontend
+     ↓              ↓              ↓
+  Data Collection → Processing → Visualization
+     ↓              ↓              ↓
+  Actuator Control ← API ← User Interface
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 📋 Prerequisites
 
-## Laravel Sponsors
+- PHP 8.0 or higher
+- Laravel 9.x
+- MySQL/PostgreSQL database
+- ESP32 development board
+- Required sensors (DHT11, pH sensor, LDR, water level sensor)
+- Required actuators (servo motor, fan, water pump)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## 🛠️ Installation
 
-### Premium Partners
+### 1. Clone the Repository
+```bash
+git clone <repository-url>
+cd terraponix
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 2. Install Dependencies
+```bash
+composer install
+npm install
+```
 
-## Contributing
+### 3. Environment Setup
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 4. Database Configuration
+```bash
+# Configure database in .env file
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=terraponix
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+```
 
-## Code of Conduct
+### 5. Run Migrations
+```bash
+php artisan migrate
+php artisan db:seed
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 6. Start the Server
+```bash
+php artisan serve
+```
 
-## Security Vulnerabilities
+## 🔌 ESP32 Setup
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Required Libraries
+```cpp
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+#include <DHT.h>
+#include <ESP32Servo.h>
+```
 
-## License
+### Configuration
+Update the ESP32 code with your network and server details:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```cpp
+// WiFi Configuration
+const char* ssid = "YOUR_WIFI_SSID";
+const char* password = "YOUR_WIFI_PASSWORD";
+
+// Server Configuration
+const char* serverUrl = "http://YOUR_SERVER_IP:8000/api/v1";
+const int deviceId = 1; // Must match database device ID
+```
+
+### Pin Configuration
+```cpp
+#define DHTPIN 25           // DHT11 sensor
+#define PH_PIN 34          // pH sensor (Analog)
+#define LDR_PIN 35         // Light sensor (Analog)
+#define SERVO_PIN 13       // Curtain servo
+#define WATER_LEVEL_PIN 32 // Water level sensor
+#define FAN_PIN 14         // Fan control
+#define PUMP_PIN 27        // Water pump control
+```
+
+## 📡 API Endpoints
+
+### Sensor Data
+- `POST /api/v1/sensor-data` - Store sensor readings
+- `GET /api/v1/sensor-data/realtime` - Get latest sensor data
+- `GET /api/v1/sensor-data/latest` - Get recent readings
+- `GET /api/v1/sensor-data/history` - Get historical data
+- `GET /api/v1/sensor-data/statistics` - Get statistical data
+
+### Actuator Control
+- `GET /api/v1/devices/{id}/actuator-status` - Get actuator status
+- `GET /api/v1/devices/{id}/actuator-realtime` - Get real-time status
+- `POST /api/v1/actuator/control` - Control individual actuator
+- `POST /api/v1/actuator/bulk-control` - Control multiple actuators
+- `POST /api/v1/devices/{id}/emergency-stop` - Emergency stop
+
+### Device Management
+- `GET /api/v1/devices` - List all devices
+- `POST /api/v1/devices/register` - Register new device
+- `GET /api/v1/devices/{id}/settings` - Get device settings
+- `POST /api/v1/devices/{id}/settings` - Update device settings
+
+## 🎨 Frontend Features
+
+### Dashboard
+- **Real-time sensor cards** with status indicators
+- **Interactive actuator control** with visual feedback
+- **Live charts** showing temperature and humidity trends
+- **System overview** with health status
+- **Emergency control** with confirmation dialogs
+
+### Actuator Control Center
+- **Individual actuator controls** with status display
+- **Bulk control operations** for efficiency
+- **Preset configurations** for common scenarios
+- **Manual control** with range sliders and buttons
+- **Activity logging** with timestamps
+
+### Sensor Data Analytics
+- **Real-time data visualization** with multiple chart types
+- **Statistical analysis** with min/max/average values
+- **Historical data browsing** with pagination
+- **Search and filter** capabilities
+- **Export functionality** (coming soon)
+
+## 🔧 Configuration
+
+### Auto-refresh Settings
+- Dashboard: 5 seconds
+- Actuator control: 3 seconds
+- Sensor data: 10 seconds
+- System status: 30 seconds
+
+### Cache Settings
+- Sensor data cache: 5 minutes
+- Actuator status cache: 5 minutes
+- Real-time data: Immediate updates
+
+## 🚨 Emergency Features
+
+### Emergency Stop
+- **One-click emergency stop** for all actuators
+- **Confirmation dialog** to prevent accidental activation
+- **Immediate shutdown** of fans, pumps, and curtains
+- **System logging** of emergency events
+
+### System Monitoring
+- **Real-time status monitoring** of all components
+- **Automatic error detection** and alerting
+- **Connection status** indicators
+- **Performance metrics** tracking
+
+## 📊 Data Management
+
+### Real-time Storage
+- **Automatic data persistence** from ESP32
+- **Caching system** for performance optimization
+- **Data validation** and error handling
+- **Logging system** for debugging
+
+### Historical Analysis
+- **Time-series data** storage and retrieval
+- **Statistical calculations** (min, max, average)
+- **Data aggregation** by time intervals
+- **Export capabilities** for external analysis
+
+## 🔒 Security Features
+
+- **CSRF protection** for all forms
+- **Input validation** and sanitization
+- **API rate limiting** (configurable)
+- **Error logging** without sensitive data exposure
+
+## 🚀 Performance Optimizations
+
+- **Caching system** for frequently accessed data
+- **Optimized database queries** with proper indexing
+- **Minimal API calls** with efficient data structures
+- **Responsive design** for optimal user experience
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **ESP32 Connection Issues**
+   - Check WiFi credentials
+   - Verify server IP address
+   - Ensure Laravel server is running
+
+2. **Data Not Updating**
+   - Check auto-refresh settings
+   - Verify API endpoints
+   - Check browser console for errors
+
+3. **Actuator Control Issues**
+   - Verify device ID in database
+   - Check actuator status endpoint
+   - Ensure proper API authentication
+
+### Debug Mode
+Enable debug mode in `.env`:
+```env
+APP_DEBUG=true
+LOG_LEVEL=debug
+```
+
+## 📈 Future Enhancements
+
+- [ ] **WebSocket support** for real-time updates
+- [ ] **Mobile app** development
+- [ ] **Machine learning** for predictive control
+- [ ] **Weather integration** for smart automation
+- [ ] **Multi-device support** for larger greenhouses
+- [ ] **Advanced analytics** and reporting
+- [ ] **User authentication** and role management
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 📞 Support
+
+For support and questions:
+- Create an issue on GitHub
+- Check the documentation
+- Review the troubleshooting guide
+
+---
+
+**🌱 Built with ❤️ for modern greenhouse automation**

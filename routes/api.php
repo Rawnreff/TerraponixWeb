@@ -21,13 +21,19 @@ Route::prefix('v1')->group(function() {
     // Sensor data endpoints
     Route::post('/sensor-data', [SensorController::class, 'store']);
     Route::get('/sensor-data/latest', [SensorController::class, 'latest']);
+    Route::get('/sensor-data/realtime', [SensorController::class, 'realtime']);
     Route::get('/sensor-data/history', [SensorController::class, 'history']);
+    Route::get('/sensor-data/statistics', [SensorController::class, 'statistics']);
     
     // Actuator control endpoints
     Route::get('/devices/{device}/actuator-status', [ActuatorController::class, 'status']);
+    Route::get('/devices/{device}/actuator-realtime', [ActuatorController::class, 'getRealtimeStatus']);
     Route::post('/actuator/control', [ActuatorController::class, 'control']);
+    Route::post('/actuator/bulk-control', [ActuatorController::class, 'bulkControl']);
+    Route::post('/devices/{device}/emergency-stop', [ActuatorController::class, 'emergencyStop']);
 });
 
 // Additional simple endpoints without v1 prefix for testing
 Route::get('/devices', [DeviceController::class, 'index']);
 Route::get('/sensor-data/latest', [SensorController::class, 'latest']);
+Route::get('/sensor-data/realtime', [SensorController::class, 'realtime']);
