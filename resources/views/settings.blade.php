@@ -329,7 +329,6 @@
                         <strong>Last Update:</strong>
                         <span id="settings-last-update" class="text-muted">-</span>
                     </div>
->>>>>>> 55b36ba61b82073e8133455f8e7f57dc114bb069
                 </div>
             </div>
         </div>

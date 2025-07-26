@@ -17,7 +17,7 @@ Route::prefix('v1')->group(function() {
     Route::post('/devices/register', [DeviceController::class, 'register']);
     Route::get('/devices/{device}/settings', [DeviceController::class, 'getSettings']);
     Route::post('/devices/{device}/settings', [DeviceController::class, 'updateSettings']);
-    
+
     // Sensor data endpoints
     Route::post('/sensor-data', [SensorController::class, 'store']);
     Route::get('/sensor-data/latest', [SensorController::class, 'latest']);
