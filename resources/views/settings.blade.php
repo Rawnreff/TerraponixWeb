@@ -90,7 +90,6 @@
                         <li>When water level falls below threshold, pump will turn on</li>
                         <li>pH levels outside the min/max range will trigger alerts</li>
                     </ul>
-=======
     <h1 class="h2">Settings</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <button type="button" class="btn btn-sm btn-primary" onclick="saveSettings()">

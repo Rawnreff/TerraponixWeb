@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\DeviceController;
 use App\Http\Controllers\Api\SensorController;
 use App\Http\Controllers\Api\ActuatorController;
+use App\Http\Controllers\DashboardController;
 
 // Simple test route
 Route::get('/test', function () {
@@ -33,3 +34,17 @@ Route::prefix('v1')->group(function() {
 // Additional simple endpoints without v1 prefix for testing
 Route::get('/devices', [DeviceController::class, 'index']);
 Route::get('/sensor-data/latest', [SensorController::class, 'latest']);
+
+Route::prefix('dashboard')->group(function () {
+    Route::get('/latest-sensor-data', [DashboardController::class, 'getLatestSensorData']);
+    Route::get('/sensor-history', [DashboardController::class, 'getSensorHistory']);
+    Route::get('/actuator-status', [DashboardController::class, 'getActuatorStatus']);
+    Route::get('/device-status', [DashboardController::class, 'getDeviceStatus']);
+    Route::get('/summary', [DashboardController::class, 'getDashboardSummary']);
+    Route::get('/export', [DashboardController::class, 'exportData']);
+});
+
+// Alternative routes (untuk kompatibilitas dengan frontend yang sudah ada)
+Route::get('/latest-sensor-data', [DashboardController::class, 'getLatestSensorData']);
+Route::get('/sensor-history', [DashboardController::class, 'getSensorHistory']);
+Route::get('/actuator-status', [DashboardController::class, 'getActuatorStatus']);

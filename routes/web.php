@@ -13,9 +13,9 @@ Route::middleware(['web'])->group(function () {
     Route::get('/sensor-data', [SensorDataController::class, 'index'])->name('sensor.data');
     Route::get('/actuator-control', [ActuatorController::class, 'index'])->name('actuator.control');
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
-    
+
     // API untuk frontend
-    Route::prefix('api')->group(function() {
+    Route::prefix('api')->group(function () {
         Route::get('/latest-sensor-data', [SensorDataController::class, 'getLatestData']);
         Route::get('/actuator-status', [ActuatorController::class, 'getStatus']);
         Route::post('/control-actuator', [ActuatorController::class, 'control']);

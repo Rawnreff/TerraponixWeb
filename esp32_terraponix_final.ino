@@ -19,8 +19,10 @@ const char* ssid = "hotspotkeren";
 const char* password = "87654321";
 
 // API Configuration - GANTI IP SESUAI IP LAPTOP ANDA
-const char* serverUrl = "http://192.168.137.36:8000/api/v1";  
+const char* serverUrl = "http://192.168.10.40:8000/api/v1";  
 const char* apiKey = ""; 
+bool hasPosted = false;
+
 
 DHT dht(DHTPIN, DHTTYPE);
 Servo servo;
@@ -153,12 +155,17 @@ void sendSensorData(float temp, float hum, float pH, int ldr, int water_level) {
   }
 
   HTTPClient http;
-  String url = String(serverUrl) + "/sensor-data";
-  
+  String url;
+  if (!hasPosted) {
+    url = String(serverUrl) + "/sensor-data"; // First POST
+  } else {
+    url = String(serverUrl) + "/sensor-data/" + String(deviceId); // PATCH after
+  }
+
   http.begin(url);
   http.addHeader("Content-Type", "application/json");
   http.setTimeout(10000);
-  
+
   DynamicJsonDocument doc(1024);
   doc["device_id"] = deviceId;
   doc["temperature"] = temp;
@@ -171,32 +178,24 @@ void sendSensorData(float temp, float hum, float pH, int ldr, int water_level) {
   serializeJson(doc, payload);
 
   Serial.println("📤 Sending sensor data...");
-  int httpCode = http.POST(payload);
+
+  int httpCode;
+  if (!hasPosted) {
+    httpCode = http.POST(payload);
+  } else {
+    httpCode = http.PATCH(payload);
+  }
 
   if (httpCode > 0) {
-    if (httpCode == HTTP_CODE_OK) {
-      String response = http.getString();
-      Serial.println("✅ Data sent successfully!");
-      
-      DynamicJsonDocument responseDoc(1024);
-      deserializeJson(responseDoc, response);
-      
-      if (responseDoc["status"] == "success") {
-        Serial.println("📊 Data saved to database");
-      }
-    } else {
-      Serial.printf("⚠️  HTTP Error code: %d\n", httpCode);
-      if (httpCode == 404) {
-        Serial.println("🔧 Check API endpoint URL");
-      } else if (httpCode == 422) {
-        Serial.println("🔧 Data validation error - check sensor values");
-      } else if (httpCode == 500) {
-        Serial.println("🔧 Server error - check Laravel logs");
-      }
+    String response = http.getString();
+    Serial.printf("✅ Server response [%d]: %s\n", httpCode, response.c_str());
+
+    if (httpCode == HTTP_CODE_OK || httpCode == 200) {
+      hasPosted = true; // setelah POST sukses, jangan ulangi
+      Serial.println("📊 Sensor data updated successfully");
     }
   } else {
-    Serial.println("❌ Connection to server failed");
-    Serial.println("🔧 Check network connection and server status");
+    Serial.println("❌ Failed to connect to server");
   }
 
   http.end();
