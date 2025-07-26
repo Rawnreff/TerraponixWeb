@@ -22,6 +22,8 @@ Route::prefix('v1')->group(function() {
     Route::post('/sensor-data', [SensorController::class, 'store']);
     Route::get('/sensor-data/latest', [SensorController::class, 'latest']);
     Route::get('/sensor-data/history', [SensorController::class, 'history']);
+    Route::patch('/sensor-data/{device}', [SensorController::class, 'update']);
+
     
     // Actuator control endpoints
     Route::get('/devices/{device}/actuator-status', [ActuatorController::class, 'status']);

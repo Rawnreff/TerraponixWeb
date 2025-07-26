@@ -105,4 +105,46 @@ class SensorController extends Controller
             'data' => $data
         ]);
     }
+    public function update(Request $request, $deviceId)
+{
+    $validated = $request->validate([
+        'temperature' => 'required|numeric',
+        'humidity' => 'required|numeric',
+        'ph_value' => 'required|numeric',
+        'light_intensity' => 'required|integer',
+        'water_level' => 'required|integer',
+        'co2_level' => 'nullable|integer',
+        'soil_moisture' => 'nullable|integer',
+    ]);
+
+    // Cari data terbaru milik device ini
+    $latestReading = SensorReading::where('device_id', $deviceId)
+        ->orderBy('created_at', 'desc')
+        ->first();
+
+    if (!$latestReading) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'No previous sensor data found for this device.'
+        ], 404);
+    }
+
+    $latestReading->update($validated);
+
+    // Update status device
+    $device = Device::find($deviceId);
+    if ($device) {
+        $device->update([
+            'last_seen' => now(),
+            'status' => 'online'
+        ]);
+    }
+
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Sensor data updated successfully',
+        'data' => $latestReading
+    ]);
+}
+
 }
