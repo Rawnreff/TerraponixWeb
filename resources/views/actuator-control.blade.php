@@ -158,13 +158,13 @@
 
 @section('scripts')
 <script>
-    // Global variables
-    let currentDeviceId = null;
+    // Initialize variables
     let autoMode = false;
+    let currentDeviceId = 1; // Default device ID
 
     // Update actuator status
     function updateActuatorStatus() {
-        axios.get('/api/actuator-status')
+        axios.get(`/api/v1/devices/${currentDeviceId}/actuator-status`)
             .then(response => {
                 const status = response.data.data;
                 
@@ -195,6 +195,42 @@
             });
     }
     
+    // Load actuator logs from database
+    function loadActuatorLogs() {
+        axios.get(`/api/v1/devices/${currentDeviceId}/actuator-logs`)
+            .then(response => {
+                const logs = response.data.data;
+                const logsTable = document.getElementById('actuator-logs');
+                
+                // Clear existing logs
+                logsTable.innerHTML = '';
+                
+                if (logs.length === 0) {
+                    logsTable.innerHTML = '<tr><td colspan="3" class="text-center">No logs available</td></tr>';
+                    return;
+                }
+                
+                // Add logs to table
+                logs.forEach(log => {
+                    const row = document.createElement('tr');
+                    const timestamp = new Date(log.timestamp).toLocaleString();
+                    
+                    row.innerHTML = `
+                        <td>${timestamp}</td>
+                        <td>${log.actuator_type.toUpperCase()}</td>
+                        <td>${log.action}</td>
+                    `;
+                    
+                    logsTable.appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading actuator logs:', error);
+                const logsTable = document.getElementById('actuator-logs');
+                logsTable.innerHTML = '<tr><td colspan="3" class="text-center">Failed to load logs</td></tr>';
+            });
+    }
+    
     function updateCurtainValue(value) {
         document.getElementById('curtainValue').textContent = value;
         controlActuator('curtain', parseInt(value));
@@ -208,14 +244,17 @@
             return;
         }
 
-        axios.post('/api/control-actuator', {
-            type: type,
+        axios.post('/api/v1/actuator/control', {
+            device_id: currentDeviceId,
+            actuator_type: type,
             value: value
         })
         .then(response => {
-            updateActuatorStatus();
-            addActuatorLog(type, value);
-            showAlert(`${type.replace('_', ' ')} controlled successfully`, 'success');
+            if (response.data.status === 'success') {
+                updateActuatorStatus();
+                loadActuatorLogs(); // Reload logs from database
+                showAlert(`${type.replace('_', ' ')} controlled successfully`, 'success');
+            }
         })
         .catch(error => {
             console.error('Error controlling actuator:', error);
@@ -223,58 +262,26 @@
         });
     }
     
-    // Add actuator log
-    function addActuatorLog(type, value) {
-        const logsTable = document.getElementById('actuator-logs');
-        
-        // Remove "no logs" message if present
-        if (logsTable.children.length === 1 && logsTable.children[0].children.length === 1) {
-            logsTable.innerHTML = '';
-        }
-        
-        const now = new Date();
-        const row = document.createElement('tr');
-        
-        let actionText = '';
-        switch(type) {
-            case 'curtain':
-                actionText = `Set to ${value}%`;
-                break;
-            case 'fan':
-            case 'water_pump':
-                actionText = value ? 'Turned ON' : 'Turned OFF';
-                break;
-        }
-        
-        row.innerHTML = `
-            <td>${now.toLocaleTimeString()}</td>
-            <td>${type.replace('_', ' ').toUpperCase()}</td>
-            <td>${actionText}</td>
-        `;
-        
-        logsTable.insertBefore(row, logsTable.firstChild);
-        
-        // Keep only the last 10 logs
-        if (logsTable.children.length > 10) {
-            logsTable.removeChild(logsTable.lastChild);
-        }
-    }
-    
     // Toggle auto mode
     function toggleAutoMode() {
-        const autoMode = document.getElementById('auto-mode-switch').checked;
+        const newAutoMode = document.getElementById('auto-mode-switch').checked;
         
-        axios.post('/api/settings', {
-            auto_mode: autoMode
+        axios.post('/api/v1/actuator/auto-mode', {
+            device_id: currentDeviceId,
+            auto_mode: newAutoMode
         })
         .then(response => {
-            showAlert(`Auto mode ${autoMode ? 'enabled' : 'disabled'}`, 'success');
-            updateActuatorStatus();
+            if (response.data.status === 'success') {
+                autoMode = newAutoMode;
+                showAlert(`Auto mode ${newAutoMode ? 'enabled' : 'disabled'}`, 'success');
+                updateActuatorStatus();
+                loadActuatorLogs(); // Reload logs to show auto mode change
+            }
         })
         .catch(error => {
             console.error('Error updating auto mode:', error);
             showAlert('Failed to update auto mode', 'danger');
-            document.getElementById('auto-mode-switch').checked = !autoMode;
+            document.getElementById('auto-mode-switch').checked = !newAutoMode;
         });
     }
 
@@ -308,9 +315,13 @@
     // Initialize
     document.addEventListener('DOMContentLoaded', function() {
         updateActuatorStatus();
+        loadActuatorLogs(); // Load initial logs
         
         // Update status every 3 seconds
         setInterval(updateActuatorStatus, 3000);
+        
+        // Update logs every 5 seconds
+        setInterval(loadActuatorLogs, 5000);
         
         // Auto mode switch event
         document.getElementById('auto-mode-switch').addEventListener('change', toggleAutoMode);

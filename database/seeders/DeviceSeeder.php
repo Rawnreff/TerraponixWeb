@@ -23,6 +23,7 @@ class DeviceSeeder extends Seeder
             'curtain_position' => 90,
             'fan_status' => false,
             'water_pump_status' => false,
+            'auto_mode' => true,
             'last_updated' => now()
         ]);
 

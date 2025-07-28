@@ -14,12 +14,14 @@ class ActuatorStatus extends Model
         'curtain_position',
         'fan_status',
         'water_pump_status',
+        'auto_mode',
         'last_updated'
     ];
 
     protected $casts = [
         'fan_status' => 'boolean',
         'water_pump_status' => 'boolean',
+        'auto_mode' => 'boolean',
         'last_updated' => 'datetime'
     ];
 

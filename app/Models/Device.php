@@ -35,4 +35,9 @@ class Device extends Model
     {
         return $this->hasOne(Setting::class);
     }
+    
+    public function actuatorLogs()
+    {
+        return $this->hasMany(ActuatorLog::class);
+    }
 }

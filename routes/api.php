@@ -29,11 +29,15 @@ Route::prefix('v1')->group(function() {
     // Actuator control endpoints
     Route::get('/devices/{device}/actuator-status', [ActuatorController::class, 'status']);
     Route::post('/actuator/control', [ActuatorController::class, 'control']);
+    Route::get('/devices/{device}/actuator-logs', [ActuatorController::class, 'logs']);
+    Route::post('/actuator/auto-mode', [ActuatorController::class, 'toggleAutoMode']);
 });
 
-// Additional simple endpoints without v1 prefix for testing
+// Web frontend compatibility routes
 Route::get('/devices', [DeviceController::class, 'index']);
 Route::get('/sensor-data/latest', [SensorController::class, 'latest']);
+Route::get('/actuator-status', [DashboardController::class, 'getActuatorStatus']);
+Route::post('/control-actuator', [ActuatorController::class, 'control']); // Bridge route for web frontend
 
 Route::prefix('dashboard')->group(function () {
     Route::get('/latest-sensor-data', [DashboardController::class, 'getLatestSensorData']);
@@ -47,4 +51,3 @@ Route::prefix('dashboard')->group(function () {
 // Alternative routes (untuk kompatibilitas dengan frontend yang sudah ada)
 Route::get('/latest-sensor-data', [DashboardController::class, 'getLatestSensorData']);
 Route::get('/sensor-history', [DashboardController::class, 'getSensorHistory']);
-Route::get('/actuator-status', [DashboardController::class, 'getActuatorStatus']);

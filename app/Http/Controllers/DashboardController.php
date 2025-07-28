@@ -103,22 +103,22 @@ class DashboardController extends Controller
     public function getActuatorStatus()
     {
         try {
+            // Default to device_id = 1 for backward compatibility
+            $deviceId = request('device_id', 1);
+            
             $status = ActuatorStatus::with('device')
-                ->orderBy('last_updated', 'desc')
+                ->where('device_id', $deviceId)
                 ->first();
 
             if (!$status) {
-                // Return default status if no data found
-                $defaultStatus = [
-                    'curtain_position' => 0,
+                // Create default status if no data found
+                $status = ActuatorStatus::create([
+                    'device_id' => $deviceId,
+                    'curtain_position' => 90,
                     'fan_status' => false,
                     'water_pump_status' => false,
+                    'auto_mode' => true,
                     'last_updated' => now()
-                ];
-
-                return response()->json([
-                    'success' => true,
-                    'data' => $defaultStatus
                 ]);
             }
 
