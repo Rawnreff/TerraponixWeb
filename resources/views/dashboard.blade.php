@@ -1168,8 +1168,9 @@ body {
                     const co2Level = data.co2_level || 0;
                     const soilMoisture = data.soil_moisture || 0;
                     
-                    animateValue('water-level-value', waterLevel.toFixed(1));
-                    animateProgressBar('water-level-bar', waterLevel);
+                    const waterLevelPercentage = waterLevel ? ((waterLevel / 3000) * 100).toFixed(1) : 0;
+                    animateValue('water-level-value', waterLevelPercentage + '%');
+                    animateProgressBar('water-level-bar', waterLevelPercentage);
                     
                     animateValue('co2-value', co2Level + ' ppm');
                     animateValue('soil-moisture-value', soilMoisture.toFixed(1) + '%');
@@ -1205,7 +1206,9 @@ body {
                     updateChart(temperatureChart, labels, history.map(item => item.avg_temp));
                     updateChart(humidityChart, labels, history.map(item => item.avg_humidity));
                     updateChart(phChart, labels, history.map(item => item.avg_ph || 7.0));
-                    updateChart(waterLevelChart, labels, history.map(item => item.avg_water_level || 0));
+                    updateChart(waterLevelChart, labels, history.map(item => {
+                        return item.avg_water_level ? (item.avg_water_level / 2300 * 100) : 0;
+                    }));
                     updateChart(co2Chart, labels, history.map(item => item.avg_co2 || 0));
                     updateChart(soilMoistureChart, labels, history.map(item => item.avg_soil_moisture || 0));
                     

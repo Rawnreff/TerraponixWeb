@@ -10,26 +10,44 @@
                     <i class="bi bi-download me-1"></i> Export
                 </button>
             </div>
-            <div class="input-group">
-                <select class="form-select form-select-sm" id="days-filter">
-                    <option value="1">Last 1 day</option>
-                    <option value="3">Last 3 days</option>
-                    <option value="7" selected>Last week</option>
-                    <option value="30">Last month</option>
-                </select>
+            <div class="dropdown">
+                <button type="button" class="btn-modern btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="bi bi-calendar-week me-1"></i> 
+                    <span id="time-range-label">Last week</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-modern shadow">
+                    <li><a class="dropdown-item" href="#" onclick="changeTimeRange(1, 'Last 24 hours')">
+                        <i class="bi bi-calendar-day me-2"></i>Last 24 hours
+                    </a></li>
+                    <li><a class="dropdown-item" href="#" onclick="changeTimeRange(3, 'Last 3 days')">
+                        <i class="bi bi-calendar-week me-2"></i>Last 3 days
+                    </a></li>
+                    <li><a class="dropdown-item" href="#" onclick="changeTimeRange(7, 'Last week')">
+                        <i class="bi bi-calendar-week me-2"></i>Last week
+                    </a></li>
+                    <li><a class="dropdown-item" href="#" onclick="changeTimeRange(30, 'Last month')">
+                        <i class="bi bi-calendar-month me-2"></i>Last month
+                    </a></li>
+                </ul>
             </div>
         </div>
     </div>
 </div>
 
 <div class="alert-modern alert alert-danger d-none mb-4" id="error-alert">
-    <i class="bi bi-exclamation-triangle-fill me-2"></i>
-    <span id="error-message"></span>
+    <div class="d-flex align-items-center">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <div class="flex-grow-1">
+            <strong>Connection Error</strong>
+            <div><span id="error-message">Unable to load data. Please check your connection.</span></div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
 </div>
 
 <div class="loading-container d-none" id="loading-indicator">
     <div class="spinner-modern"></div>
-    <div class="mt-3 placeholder-shimmer"></div>
+    <p class="mt-3 text-muted">Loading sensor data...</p>
 </div>
 
 <div class="row mb-4">
@@ -68,17 +86,6 @@
             <i class="bi bi-graph-up me-2"></i> Sensor Data History
             <span class="chart-period ms-2" id="time-range">(Last week)</span>
         </h5>
-        <div class="dropdown">
-            <button class="btn-modern btn-outline-secondary dropdown-toggle" type="button" id="chartRangeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                Time Range
-            </button>
-            <ul class="dropdown-menu dropdown-menu-modern" aria-labelledby="chartRangeDropdown">
-                <li><a class="dropdown-item" href="#" onclick="changeTimeRange(1, 'Last 24 hours')">Last 24 hours</a></li>
-                <li><a class="dropdown-item" href="#" onclick="changeTimeRange(3, 'Last 3 days')">Last 3 days</a></li>
-                <li><a class="dropdown-item" href="#" onclick="changeTimeRange(7, 'Last week')">Last week</a></li>
-                <li><a class="dropdown-item" href="#" onclick="changeTimeRange(30, 'Last month')">Last month</a></li>
-            </ul>
-        </div>
     </div>
     <div class="chart-body">
         <canvas id="sensorHistoryChart" height="100"></canvas>
@@ -124,7 +131,7 @@
             <div class="card-body-modern">
                 <div class="metric-display">
                     <div class="metric-value" id="co2-value">-- ppm</div>
-                    <div class="metric-status">Optimal: 400-800 ppm</div>
+                    <div class="metric-status" id="co2-status">Optimal: 400-800 ppm</div>
                 </div>
                 <div class="metric-label">Air Quality</div>
             </div>
@@ -150,12 +157,13 @@
                         <th>pH</th>
                         <th>Light (lux)</th>
                         <th>Water Level</th>
+                        <th>CO₂ (ppm)</th>
                         <th>Soil Moisture</th>
                     </tr>
                 </thead>
                 <tbody id="sensor-data-table">
                     <tr>
-                        <td colspan="7" class="text-center">Loading data...</td>
+                        <td colspan="8" class="text-center">Loading data...</td>
                     </tr>
                 </tbody>
             </table>
@@ -221,6 +229,7 @@ body {
     border: none;
     position: relative;
     overflow: hidden;
+    color: white;
 }
 
 .btn-modern:hover {
@@ -234,6 +243,7 @@ body {
     padding: 0.5rem;
     backdrop-filter: blur(10px);
     background: rgba(255, 255, 255, 0.95);
+    box-shadow: var(--card-shadow);
 }
 
 .dropdown-menu-modern .dropdown-item {
@@ -552,7 +562,7 @@ body {
         padding: 1rem;
     }
     
-    .sensor-card, .modern-card, .control-card {
+    .sensor-card, .modern-card {
         height: auto;
         min-height: 120px;
     }
@@ -610,6 +620,11 @@ body {
             border: '#f39c12',
             background: 'rgba(243, 156, 18, 0.1)',
             gradient: ['#f39c12', '#e67e22']
+        },
+        co2: {
+            border: '#2ecc71',
+            background: 'rgba(46, 204, 113, 0.1)',
+            gradient: ['#2ecc71', '#27ae60']
         }
     };
     
@@ -662,6 +677,20 @@ body {
                         pointBorderColor: '#ffffff',
                         pointBorderWidth: 2,
                         yAxisID: 'y2'
+                    },
+                    {
+                        label: 'CO₂ (ppm)',
+                        data: [],
+                        borderColor: chartColors.co2.border,
+                        backgroundColor: chartColors.co2.background,
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: chartColors.co2.border,
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        yAxisID: 'y3'
                     }
                 ]
             },
@@ -760,6 +789,24 @@ body {
                         },
                         min: 0,
                         max: 14
+                    },
+                    y3: {
+                        display: true,
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                        ticks: {
+                            color: '#6c757d',
+                            font: {
+                                size: 11
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'CO₂ (ppm)',
+                            color: '#6c757d'
+                        }
                     }
                 },
                 animation: {
@@ -850,79 +897,124 @@ body {
             lightStatus.textContent = 'Normal: 400-800 lux';
             lightStatus.style.color = '#27ae60';
         }
+
+        // CO2 status
+        const co2 = data.co2_level;
+        const co2Status = document.getElementById('co2-status');
+        if (co2 < 400) {
+            co2Status.textContent = 'Low - Below 400 ppm';
+            co2Status.style.color = '#e67e22';
+        } else if (co2 > 800) {
+            co2Status.textContent = 'High - Above 800 ppm';
+            co2Status.style.color = '#e74c3c';
+        } else {
+            co2Status.textContent = 'Optimal: 400-800 ppm';
+            co2Status.style.color = '#27ae60';
+        }
     }
 
     // Update dashboard data
-        function updateDashboard() {
-            console.log('Updating dashboard...');
-            showLoading();
+    function updateDashboard() {
+        console.log('Updating dashboard...');
+        showLoading();
 
-            // Fetch latest sensor data
-            axios.get('/api/sensor-data/latest')        
-                .then(response => {
-                    console.log('Sensor data response:', response.data);
-                    hideError();
-                    hideLoading();
+        // Fetch latest sensor data
+        axios.get('/api/sensor-data/latest')
+            .then(response => {
+                console.log('Sensor data response:', response.data);
+                hideError();
+                hideLoading();
+                
+                if (response.data.status === "success" && response.data.data && response.data.data.length > 0) {
+                    const sensorData = response.data.data;
+                    const tableBody = document.getElementById('sensor-data-table');
                     
-                    if (response.data.status === "success" && response.data.data && response.data.data.length > 0) {
-                        const sensorData = response.data.data;
-                        const tableBody = document.getElementById('sensor-data-table');
+                    // Clear table
+                    tableBody.innerHTML = '';
+                    
+                    // Populate table with all returned data
+                    sensorData.forEach(data => {
+                        const waterLevelPercentage = data.water_level ? ((data.water_level / 3000) * 100).toFixed(1) : '--';
                         
-                        // Clear table
-                        tableBody.innerHTML = '';
-                        
-                        // Populate table with all returned data
-                        sensorData.forEach(data => {
-                            const row = document.createElement('tr');
-                            row.innerHTML = `
-                                <td>${new Date(data.created_at).toLocaleString()}</td>
-                                <td>${data.temperature?.toFixed(1) || '--'}</td>
-                                <td>${data.humidity?.toFixed(1) || '--'}</td>
-                                <td>${data.ph_value?.toFixed(2) || '--'}</td>
-                                <td>${data.light_intensity || '--'}</td>
-                                <td>${data.water_level || '--'}</td>
-                                <td>${data.soil_moisture || '--'}</td>
-                            `;
-                            tableBody.appendChild(row);
-                        });
-
-                        // Get the latest reading (first item in array)
-                        const latest = sensorData[0];
-                        
-                        // Update summary cards
-                        animateValue('temperature-value', latest.temperature?.toFixed(1) + ' °C');
-                        animateValue('humidity-value', latest.humidity?.toFixed(1) + ' %');
-                        animateValue('ph-value', latest.ph_value?.toFixed(2) || '--');
-                        animateValue('light-value', latest.light_intensity?.toFixed(0) + ' lux' || '--');
-                        animateValue('water-level-value', latest.water_level?.toFixed(0) + '%' || '--');
-                        animateProgressBar('water-level-bar', latest.water_level || 0);
-                        animateValue('soil-moisture-value', latest.soil_moisture?.toFixed(0) + '%' || '--');
-
-                        // Update sensor status indicators
-                        updateSensorStatus(latest);
-                        
-                        // Update last seen
-                        document.getElementById('last-seen').textContent = 'Last updated: ' + new Date(latest.created_at).toLocaleString();
-                        
-                    } else {
-                        document.getElementById('sensor-data-table').innerHTML = `
-                            <tr>
-                                <td colspan="7" class="text-center">No data available</td>
-                            </tr>
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${new Date(data.created_at).toLocaleString()}</td>
+                            <td>${data.temperature?.toFixed(1) || '--'}</td>
+                            <td>${data.humidity?.toFixed(1) || '--'}</td>
+                            <td>${data.ph_value?.toFixed(2) || '--'}</td>
+                            <td>${data.light_intensity || '--'}</td>
+                            <td>${waterLevelPercentage}%</td>
+                            <td>${data.co2_level || '--'}</td>
+                            <td>${data.soil_moisture || '--'}</td>
                         `;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching sensor data:', error);
-                    showError('Failed to load sensor data: ' + (error.message || 'Unknown error'));
-                    hideLoading();
+                        tableBody.appendChild(row);
+                    });
+
+                    // Get the latest reading (first item in array)
+                    const latest = sensorData[0];
+                    const waterLevelPercentage = latest.water_level ? ((latest.water_level / 2300) * 100).toFixed(1) : 0;
+                    
+                    // Update summary cards
+                    animateValue('temperature-value', latest.temperature?.toFixed(1) + ' °C');
+                    animateValue('humidity-value', latest.humidity?.toFixed(1) + ' %');
+                    animateValue('ph-value', latest.ph_value?.toFixed(2) || '--');
+                    animateValue('light-value', latest.light_intensity?.toFixed(0) + ' lux' || '--');
+                    animateValue('water-level-value', waterLevelPercentage + '%' || '--');
+                    animateProgressBar('water-level-bar', waterLevelPercentage || 0);
+                    animateValue('co2-value', latest.co2_level?.toFixed(0) + ' ppm' || '--');
+
+                    // Update sensor status indicators
+                    updateSensorStatus(latest);
+                    
+                    // Update last seen
+                    document.getElementById('last-seen').textContent = 'Last updated: ' + new Date(latest.created_at).toLocaleString();
+                    
+                } else {
                     document.getElementById('sensor-data-table').innerHTML = `
                         <tr>
-                            <td colspan="7" class="text-center text-danger">Error loading data</td>
+                            <td colspan="8" class="text-center">No data available</td>
                         </tr>
                     `;
-                });
-        }
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching sensor data:', error);
+                showError('Failed to load sensor data: ' + (error.message || 'Unknown error'));
+                hideLoading();
+                document.getElementById('sensor-data-table').innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center text-danger">Error loading data</td>
+                    </tr>
+                `;
+            });
+
+        // Fetch sensor history for charts
+        axios.get('/api/sensor-data/latest', { params: { days: currentDays } })
+            .then(response => {
+                console.log('History data response:', response.data);
+                if (response.data.status === "success" && response.data.data && response.data.data.length > 0) {
+                    const history = response.data.data;
+                    const labels = history.map(item => {
+                        const date = new Date(item.date);
+                        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    });
+                    
+                    // Update chart data
+                    sensorHistoryChart.data.labels = labels;
+                    sensorHistoryChart.data.datasets[0].data = history.map(item => item.avg_temp);
+                    sensorHistoryChart.data.datasets[1].data = history.map(item => item.avg_humidity);
+                    sensorHistoryChart.data.datasets[2].data = history.map(item => item.avg_ph || 7.0);
+                    sensorHistoryChart.data.datasets[3].data = history.map(item => item.avg_co2 || 0);
+                    sensorHistoryChart.update();
+                    
+                } else {
+                    console.warn('No history data available');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching history data:', error);
+            });
+    }
 
     // Animate value changes
     function animateValue(elementId, newValue) {
@@ -948,6 +1040,7 @@ body {
     function changeTimeRange(days, label) {
         currentDays = days;
         document.getElementById('time-range').textContent = `(${label})`;
+        document.getElementById('time-range-label').textContent = label;
         updateDashboard();
     }
 
@@ -982,17 +1075,6 @@ body {
                 toast.show();
             }
         }, 3000);
-        
-        // Handle time filter change
-        document.getElementById('days-filter').addEventListener('change', function() {
-            const days = parseInt(this.value);
-            let label = 'Last week';
-            if (days === 1) label = 'Last 24 hours';
-            else if (days === 3) label = 'Last 3 days';
-            else if (days === 30) label = 'Last month';
-            
-            changeTimeRange(days, label);
-        });
     });
 
     // Handle page visibility change for performance

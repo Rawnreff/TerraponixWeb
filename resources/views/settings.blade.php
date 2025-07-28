@@ -179,7 +179,7 @@
                             <input type="range" class="form-range-modern" id="manual-curtain" 
                                    min="0" max="100" value="50" oninput="updateCurtainValue()">
                         </div>
-                        <div class="text-center">
+                        <div class="text-center" style="margin-top: 10px;">
                             <small class="text-muted">Position: <span id="curtain-value">50</span>%</small>
                         </div>
                         <button class="btn btn-sm btn-outline-primary mt-2 w-100" onclick="controlCurtain()">
@@ -224,19 +224,21 @@
             </div>
             <div class="card-body-modern">
                 <div class="row">
-                    <div class="col-md-3">
+                    <div class="col-md-3" style="margin-top: 3px;">
                         <strong>Device IP:</strong>
                         <span id="device-ip" class="text-muted">-</span>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-3"  style="margin-top: 3px;">
                         <strong>Location:</strong>
                         <span id="device-location" class="text-muted">-</span>
                     </div>
                     <div class="col-md-3">
-                        <strong>Auto Mode:</strong>
-                        <span id="auto-mode-status" class="status-badge">-</span>
+                        <div class="d-flex align-items-center">
+                            <strong class="me-2">Auto Mode:</strong>
+                            <span id="auto-mode-status" class="status-badge">-</span>
+                        </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-3" style="margin-top: 3px;">
                         <strong>Last Update:</strong>
                         <span id="settings-last-update" class="text-muted">-</span>
                     </div>
@@ -443,8 +445,10 @@ function updateActuatorDisplay(actuatorStatus) {
     
     // Update auto mode status
     if (document.getElementById('auto-mode-status')) {
-        document.getElementById('auto-mode-status').textContent = actuatorStatus.auto_mode ? 'Enabled' : 'Disabled';
-        document.getElementById('auto-mode-status').className = `status-badge ${actuatorStatus.auto_mode ? 'online' : 'offline'}`;
+        const autoModeElement = document.getElementById('auto-mode-status');
+        autoModeElement.textContent = actuatorStatus.auto_mode ? 'ACTIVE' : 'INACTIVE';
+        autoModeElement.className = 'status-badge'; // Reset class
+        autoModeElement.classList.add(actuatorStatus.auto_mode ? 'online' : 'offline');
     }
     
     // Update last updated timestamp
@@ -690,25 +694,30 @@ setInterval(() => {
 
 /* Status Badge */
 .status-badge {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: 0.5rem 1rem;
     border-radius: 20px;
     font-weight: 600;
     font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    transition: var(--transition);
+    transition: all 0.3s ease;
+    color: white !important;
+    min-width: 80px;
+    text-align: center;
 }
 
 .status-badge.online {
-    background: var(--success-gradient);
-    color: white;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    box-shadow: 0 2px 8px rgba(46, 204, 113, 0.2);
 }
 
 .status-badge.offline {
-    background: var(--danger-gradient);
-    color: white;
-}
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.2);
+}   
 
 /* Form Text */
 .form-text {

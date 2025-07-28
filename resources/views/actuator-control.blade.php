@@ -28,7 +28,7 @@
     <div class="col-md-6 mb-4">
         <div class="modern-card">
             <div class="card-header-modern">
-                <i class="bi bi-blinds text-primary me-2"></i>
+                <i class="bi bi-house text-primary me-2"></i>
                 <span>Curtain Control</span>
             </div>
             <div class="card-body-modern">
@@ -66,7 +66,7 @@
                     <div class="col-md-6">
                         <h5>Current Status</h5>
                         <div class="metric-value text-center">
-                            <span id="fan-status-text" class="status-badge">OFF</span>
+                            <span id="fan-status-text" class="status-badge offline">OFF</span>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -103,7 +103,7 @@
                     <div class="col-md-6">
                         <h5>Current Status</h5>
                         <div class="metric-value text-center">
-                            <span id="pump-status-text" class="status-badge">OFF</span>
+                            <span id="pump-status-text" class="status-badge offline">OFF</span>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -173,16 +173,20 @@
                 document.getElementById('curtainRange').value = status.curtain_position;
                 document.getElementById('curtainValue').textContent = status.curtain_position;
                 
-                // Update fan
+                // Update fan - Perbaikan di sini
                 const fanStatus = status.fan_status;
-                document.getElementById('fan-status-text').textContent = fanStatus ? 'ON' : 'OFF';
-                document.getElementById('fan-status-text').className = fanStatus ? 'status-badge online' : 'status-badge offline';
+                const fanStatusElement = document.getElementById('fan-status-text');
+                fanStatusElement.textContent = fanStatus ? 'ON' : 'OFF';
+                fanStatusElement.className = 'status-badge'; // Reset class
+                fanStatusElement.classList.add(fanStatus ? 'online' : 'offline'); // Tambahkan class status
                 document.getElementById('fan-switch').checked = fanStatus;
                 
-                // Update pump
+                // Update pump - Perbaikan di sini
                 const pumpStatus = status.water_pump_status;
-                document.getElementById('pump-status-text').textContent = pumpStatus ? 'ON' : 'OFF';
-                document.getElementById('pump-status-text').className = pumpStatus ? 'status-badge online' : 'status-badge offline';
+                const pumpStatusElement = document.getElementById('pump-status-text');
+                pumpStatusElement.textContent = pumpStatus ? 'ON' : 'OFF';
+                pumpStatusElement.className = 'status-badge'; // Reset class
+                pumpStatusElement.classList.add(pumpStatus ? 'online' : 'offline'); // Tambahkan class status
                 document.getElementById('pump-switch').checked = pumpStatus;
                 
                 // Update auto mode
@@ -378,6 +382,12 @@
     margin: 1rem 0;
 }
 
+/* Ensure text contrast */
+.card-body-modern h5 {
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
 /* Status Badge */
 .status-badge {
     display: inline-block;
@@ -387,17 +397,18 @@
     font-size: 1rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    transition: var(--transition);
+    transition: all 0.3s ease;
+    color: white !important;
 }
 
 .status-badge.online {
-    background: var(--success-gradient);
-    color: white;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    box-shadow: 0 2px 10px rgba(46, 204, 113, 0.3);
 }
 
 .status-badge.offline {
-    background: var(--danger-gradient);
-    color: white;
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+    box-shadow: 0 2px 10px rgba(231, 76, 60, 0.3);
 }
 
 /* Table Modern */
