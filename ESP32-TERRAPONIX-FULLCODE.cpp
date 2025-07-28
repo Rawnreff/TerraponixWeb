@@ -8,7 +8,7 @@
 
 // Pin Definitions
 #define DHTPIN 25
-#define DHTTYPE DHT11
+#define DHTTYPE DHT22
 #define PH_PIN 34
 #define MQ135_PIN 33
 #define SERVO_PIN 13
