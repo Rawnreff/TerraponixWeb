@@ -14,6 +14,7 @@ return new class extends Migration
             $table->integer('curtain_position')->default(90)->comment('0-100%');
             $table->boolean('fan_status')->default(false)->comment('0=off, 1=on');
             $table->boolean('water_pump_status')->default(false);
+            $table->boolean('auto_mode')->default(true);
             $table->datetime('last_updated')->useCurrent();
             $table->timestamps(); // untuk mencatat waktu pembuatan dan pembaruan
             

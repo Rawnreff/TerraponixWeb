@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('actuator_logs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('device_id')->constrained()->onDelete('cascade');
-            $table->enum('actuator_type', ['curtain', 'fan', 'water_pump', 'system']);
+            $table->string('actuator_type', 20)->default('curtain');
             $table->string('action', 100); // 'Set to 50%', 'Turned ON', 'Turned OFF'
             $table->string('value', 50); // '50', 'true', 'false'
             $table->timestamp('timestamp')->useCurrent();

@@ -43,6 +43,22 @@
 
 ## 📋 Cara Setup
 
+### Windows (XAMPP):
+```cmd
+# 1. Setup database (PowerShell)
+.\setup_database.ps1
+
+# OR Command Prompt
+setup_database_windows.bat
+
+# 2. Start server
+php artisan serve
+
+# 3. Access web interface
+http://localhost:8000
+```
+
+### Linux/Mac:
 ```bash
 # 1. Run database setup
 ./setup_database.sh
@@ -52,6 +68,14 @@ php artisan serve
 
 # 3. Access web interface
 http://localhost:8000
+```
+
+### 🚨 Migration Error Fix:
+Jika ada error "Table doesn't exist":
+```cmd
+php artisan migrate:reset --force
+php artisan migrate --force  
+php artisan db:seed --force
 ```
 
 ## 🎯 Kompatibilitas ESP32
