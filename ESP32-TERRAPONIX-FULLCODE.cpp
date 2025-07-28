@@ -15,10 +15,10 @@
 #define WATER_LEVEL_PIN 32
 #define SOIL_MOISTURE_PIN 35
 #define FAN_PIN 14
-#define PUMP_PIN 27
+#define PUMP_PIN 27 
 
 // I2C Configuration
-#define I2C_SDA 21
+#define I2C_SDA 21  
 #define I2C_SCL 22
 
 // WiFi Credentials
@@ -30,16 +30,16 @@ const char* serverUrl = "http://192.168.137.36:8000/api/v1";
 const char* apiKey = "";
 
 // Data Management
-const int deviceId = 1; // Make sure this matches your database
+const int deviceId = 1;
 bool hasPosted = false;
 int patchCount = 0;
-const int maxPatchesBeforePost = 30;
+const int maxPatchesBeforePost = 12;
 
 // Timing
 unsigned long lastSensorUpdate = 0;
-const long sensorUpdateInterval = 2000;
+const long sensorUpdateInterval = 5000;
 unsigned long lastActuatorCheck = 0;
-const long actuatorCheckInterval = 5000;
+const long actuatorCheckInterval = 2000;
 
 DHT dht(DHTPIN, DHTTYPE);
 Servo servo;
@@ -69,7 +69,7 @@ void setup() {
   Serial.println("\n🌱 Terraponix System Ready");
 }
 
-void loop() {
+void loop() { 
   if (WiFi.status() != WL_CONNECTED) {
     connectToWiFi();
   }
@@ -116,8 +116,10 @@ void sendSensorData(float temp, float hum, float pH, float lux, int waterLevel, 
 
   if (shouldPost) {
     url = String(serverUrl) + "/sensor-data";
+    Serial.println("📤 Sending POST request (New Data)");
   } else {
     url = String(serverUrl) + "/sensor-data/" + String(deviceId);
+    Serial.println("🔄 Sending PATCH request (Update)");
   }
 
   // Create JSON payload
@@ -126,7 +128,7 @@ void sendSensorData(float temp, float hum, float pH, float lux, int waterLevel, 
   doc["temperature"] = temp;
   doc["humidity"] = hum;
   doc["ph_value"] = pH;
-  doc["light_intensity"] = round(lux); // Your API expects integer
+  doc["light_intensity"] = round(lux);
   doc["water_level"] = waterLevel;
   doc["co2_level"] = co2;
   doc["soil_moisture"] = soilMoisture;
@@ -143,20 +145,23 @@ void sendSensorData(float temp, float hum, float pH, float lux, int waterLevel, 
   // Send request
   int httpCode;
   if (shouldPost) {
-    Serial.println("Sending POST request");
     httpCode = http.POST(payload);
   } else {
-    Serial.println("Sending PATCH request");
-    httpCode = http.sendRequest("PATCH", payload); // Explicit PATCH method
+    httpCode = http.sendRequest("PATCH", payload);
   }
 
   // Handle response
   if (httpCode > 0) {
     String response = http.getString();
-    Serial.print("HTTP Code: ");
-    Serial.println(httpCode);
-    Serial.print("Response: ");
-    Serial.println(response);
+    Serial.printf("HTTP Code: %d\n", httpCode);
+    Serial.println("Response: " + response);
+    
+    // Auto-fallback to POST if PATCH fails with 404
+    if (!shouldPost && httpCode == HTTP_CODE_NOT_FOUND) {
+      Serial.println("⚠ No existing data found. Falling back to POST...");
+      sendSensorData(temp, hum, pH, lux, waterLevel, co2, soilMoisture); // Recursively call with POST
+      return;
+    }
     
     if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_CREATED) {
       if (shouldPost) {
@@ -167,8 +172,7 @@ void sendSensorData(float temp, float hum, float pH, float lux, int waterLevel, 
       }
     }
   } else {
-    Serial.print("Error: ");
-    Serial.println(http.errorToString(httpCode));
+    Serial.printf("Error: %s\n", http.errorToString(httpCode).c_str());
   }
 
   http.end();
