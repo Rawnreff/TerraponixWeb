@@ -450,13 +450,27 @@ body {
     box-shadow: 0 10px 25px rgba(0,0,0,0.15);
 }
 
-.dropdown-menu-modern {
-    border: none;
-    border-radius: 12px;
-    padding: 0.5rem;
-    backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.95);
+.dropdown {
+    position: relative;
+    z-index: 1000;
 }
+
+    .dropdown-menu-modern {
+        position: absolute;
+        z-index: 1050; /* Lebih tinggi dari parent dropdown */
+        left: 0;
+        top: 100%;
+        margin-top: 0.5rem;
+        min-width: 100%;
+        border: none;
+        border-radius: 12px;
+        padding: 0.5rem;
+        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.95);
+        will-change: transform;
+        transform: translateZ(0);
+        overflow: visible !important;   
+    }
 
 .dropdown-menu-modern .dropdown-item {
     border-radius: 8px;
@@ -525,6 +539,7 @@ body {
     box-shadow: var(--card-shadow);
     border: 1px solid rgba(255, 255, 255, 0.2);
     position: relative;
+    z-index: auto;
     overflow: hidden;
     transition: var(--transition);
     height: 160px;
@@ -606,6 +621,8 @@ body {
     transition: var(--transition);
     overflow: hidden;
     height: 200px;
+    position: relative;
+    z-index: auto;
 }
 
 .modern-card:hover {
@@ -708,6 +725,8 @@ body {
     transition: var(--transition);
     overflow: hidden;
     margin-bottom: 2rem;
+    position: relative;
+    z-index: auto;
 }
 
 .chart-card:hover {
@@ -756,6 +775,8 @@ body {
     transition: var(--transition);
     overflow: hidden;
     height: 100%;
+    position: relative;
+    z-index: auto;    
 }
 
 .control-card:hover {

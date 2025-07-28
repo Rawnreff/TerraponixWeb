@@ -371,41 +371,43 @@
         <i class="bi bi-list"></i>
     </button>
 
-    <div class="container-fluid p-0">
+    <div class="container-fluid p-0 min-vh-100">
         <div class="row g-0">
             <!-- Modern Sidebar -->
-            <div class="col-md-3 col-lg-2 sidebar" id="sidebar">
-                <div class="text-center py-4">
-                    <h4>Terraponix</h4>
-                    <div class="d-flex justify-content-center align-items-center mt-2">
-                        <span class="status-indicator status-online"></span>
-                        <small class="text-white-50">System Online</small>
+            <div class="col-md-3 col-lg-2 sidebar d-flex flex-column" id="sidebar" style="min-height: 100vh;">
+                <div>
+                    <div class="text-center py-4">
+                        <h4>Terraponix</h4>
+                        <div class="d-flex justify-content-center align-items-center mt-2">
+                            <span class="status-indicator status-online"></span>
+                            <small class="text-white-50">System Online</small>
+                        </div>
                     </div>
-                </div>
-                <div class="list-group list-group-flush">
-                    <a href="{{ route('dashboard') }}" class="list-group-item list-group-item-action {{ Request::is('dashboard') ? 'active' : '' }}">
-                        <i class="bi bi-speedometer2"></i> Dashboard
-                    </a>
-                    <a href="{{ route('sensor.data') }}" class="list-group-item list-group-item-action {{ Request::is('sensor-data') ? 'active' : '' }}">
-                        <i class="bi bi-graph-up"></i> Sensor Data
-                    </a>
-                    <a href="{{ route('actuator.control') }}" class="list-group-item list-group-item-action {{ Request::is('actuator-control') ? 'active' : '' }}">
-                        <i class="bi bi-gear"></i> Actuator Control
-                    </a>
-                    <a href="{{ route('settings') }}" class="list-group-item list-group-item-action {{ Request::is('settings') ? 'active' : '' }}">
-                        <i class="bi bi-sliders"></i> Settings
-                    </a>
-                </div>
-                
-                <!-- System Info -->
-                <div class="mt-auto p-3">
-                    <div class="card bg-transparent border-0">
-                        <div class="card-body p-2 text-center">
-                            <small class="text-white-50 d-block">Last Update</small>
-                            <small class="text-white" id="lastUpdate">--:--:--</small>
+                    <div class="list-group list-group-flush">
+                        <a href="{{ route('dashboard') }}" class="list-group-item list-group-item-action {{ Request::is('dashboard') ? 'active' : '' }}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                        <a href="{{ route('sensor.data') }}" class="list-group-item list-group-item-action {{ Request::is('sensor-data') ? 'active' : '' }}">
+                            <i class="bi bi-graph-up"></i> Sensor Data
+                        </a>
+                        <a href="{{ route('actuator.control') }}" class="list-group-item list-group-item-action {{ Request::is('actuator-control') ? 'active' : '' }}">
+                            <i class="bi bi-gear"></i> Actuator Control
+                        </a>
+                        <a href="{{ route('settings') }}" class="list-group-item list-group-item-action {{ Request::is('settings') ? 'active' : '' }}">
+                            <i class="bi bi-sliders"></i> Settings
+                        </a>
+                    </div>
+                    <!-- System Info -->
+                    <div class="mt-auto p-3">
+                        <div class="card bg-transparent border-0">
+                            <div class="card-body p-2 text-center">
+                                <small class="text-white-50 d-block">Last Update</small>
+                                <small class="text-white" id="lastUpdate">--:--:--</small>
+                            </div>
                         </div>
                     </div>
                 </div>
+                
             </div>
 
             <!-- Enhanced Main Content -->

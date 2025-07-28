@@ -135,7 +135,7 @@
 <div class="chart-card">
     <div class="chart-header">
         <h5 class="chart-title">
-            <i class="bi bi-table me-2"></i> Latest Sensor Readings
+            <i class="bi bi-table me-2"></i> Latest Sensor Data
         </h5>
         <div class="text-muted small" id="last-seen">Last updated: --</div>
     </div>
@@ -154,7 +154,9 @@
                     </tr>
                 </thead>
                 <tbody id="sensor-data-table">
-                    <!-- Data will be filled by JavaScript -->
+                    <tr>
+                        <td colspan="7" class="text-center">Loading data...</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -851,122 +853,76 @@ body {
     }
 
     // Update dashboard data
-    function updateDashboard() {
-        console.log('Updating dashboard...');
-        
-        // Show loading only on first load
-        if (!document.getElementById('temperature-value').textContent.includes('°C')) {
+        function updateDashboard() {
+            console.log('Updating dashboard...');
             showLoading();
-        }
 
-        // Test API connection first
-        axios.get('/api/test')
-            .then(response => {
-                console.log('API test successful:', response.data);
-                hideError();
-            })
-            .catch(error => {
-                console.error('API test failed:', error);
-                showError('API connection failed');
-                hideLoading();
-                return;
-            });
+            // Fetch latest sensor data
+            axios.get('/api/sensor-data/latest')        
+                .then(response => {
+                    console.log('Sensor data response:', response.data);
+                    hideError();
+                    hideLoading();
+                    
+                    if (response.data.status === "success" && response.data.data && response.data.data.length > 0) {
+                        const sensorData = response.data.data;
+                        const tableBody = document.getElementById('sensor-data-table');
+                        
+                        // Clear table
+                        tableBody.innerHTML = '';
+                        
+                        // Populate table with all returned data
+                        sensorData.forEach(data => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${new Date(data.created_at).toLocaleString()}</td>
+                                <td>${data.temperature?.toFixed(1) || '--'}</td>
+                                <td>${data.humidity?.toFixed(1) || '--'}</td>
+                                <td>${data.ph_value?.toFixed(2) || '--'}</td>
+                                <td>${data.light_intensity || '--'}</td>
+                                <td>${data.water_level || '--'}</td>
+                                <td>${data.soil_moisture || '--'}</td>
+                            `;
+                            tableBody.appendChild(row);
+                        });
 
-        // Fetch latest sensor data
-        axios.get('/api/dashboard/latest-sensor-data')
-            .then(response => {
-                console.log('Sensor data response:', response.data);
-                hideError();
-                hideLoading();
-                
-                if (response.data.success && response.data.data.length > 0) {
-                    const data = response.data.data[0];
-                    console.log('Processing sensor data:', data);
-                    
-                    // Update main sensor values with animation
-                    animateValue('temperature-value', data.temperature.toFixed(1) + ' °C');
-                    animateValue('humidity-value', data.humidity.toFixed(1) + ' %');
-                    animateValue('ph-value', data.ph_value.toFixed(2));
-                    animateValue('light-value', data.light_intensity + ' lux');
-                    
-                    // Update additional sensors (handle null values)
-                    const waterLevel = data.water_level || 0;
-                    const co2Level = data.co2_level || 0;
-                    const soilMoisture = data.soil_moisture || 0;
-                    
-                    animateValue('water-level-value', waterLevel.toFixed(1));
-                    animateProgressBar('water-level-bar', waterLevel);
-                    
-                    animateValue('co2-value', co2Level + ' ppm');
-                    animateValue('soil-moisture-value', soilMoisture.toFixed(1) + '%');
-                    
-                    // Update sensor status indicators
-                    updateSensorStatus(data);
-                    
-                    // Update last seen
-                    document.getElementById('last-seen').textContent = 'Last updated: ' + new Date(data.created_at).toLocaleString();
-                    
-                    console.log('Sensor data updated successfully');
-                } else {
-                    console.warn('No sensor data received or empty data array');
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching sensor data:', error);
-                console.error('Error details:', error.response);
-                showError('Failed to load sensor data: ' + (error.message || 'Unknown error'));
-                hideLoading();
-            });
-        
-        // Fetch sensor history for charts
-        axios.get('/api/dashboard/sensor-history', { params: { days: currentDays } })
-            .then(response => {
-                console.log('History data response:', response.data);
-                if (response.data.success && response.data.data.length > 0) {
-                    const history = response.data.data;
-                    const labels = history.map(item => item.date || new Date(item.created_at).toLocaleDateString());
-                    
-                    // Update chart data
-                    sensorHistoryChart.data.labels = labels;
-                    sensorHistoryChart.data.datasets[0].data = history.map(item => item.avg_temp || item.temperature);
-                    sensorHistoryChart.data.datasets[1].data = history.map(item => item.avg_humidity || item.humidity);
-                    sensorHistoryChart.data.datasets[2].data = history.map(item => item.avg_ph || item.ph_value || 7.0);
-                    sensorHistoryChart.update();
-                    
-                    // Update table (show latest 10 readings)
-                    const tableBody = document.getElementById('sensor-data-table');
-                    tableBody.innerHTML = '';
-                    
-                    history.slice(0, 10).forEach(item => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${new Date(item.created_at).toLocaleString()}</td>
-                            <td>${item.temperature?.toFixed(1) || item.avg_temp?.toFixed(1) || '--'}</td>
-                            <td>${item.humidity?.toFixed(1) || item.avg_humidity?.toFixed(1) || '--'}</td>
-                            <td>${item.ph_value?.toFixed(2) || item.avg_ph?.toFixed(2) || '--'}</td>
-                            <td>${item.light_intensity || item.avg_light || '--'}</td>
-                            <td>${item.water_level || item.avg_water_level || '--'}</td>
-                            <td>${item.soil_moisture || item.avg_soil_moisture || '--'}</td>
+                        // Get the latest reading (first item in array)
+                        const latest = sensorData[0];
+                        
+                        // Update summary cards
+                        animateValue('temperature-value', latest.temperature?.toFixed(1) + ' °C');
+                        animateValue('humidity-value', latest.humidity?.toFixed(1) + ' %');
+                        animateValue('ph-value', latest.ph_value?.toFixed(2) || '--');
+                        animateValue('light-value', latest.light_intensity?.toFixed(0) + ' lux' || '--');
+                        animateValue('water-level-value', latest.water_level?.toFixed(0) + '%' || '--');
+                        animateProgressBar('water-level-bar', latest.water_level || 0);
+                        animateValue('soil-moisture-value', latest.soil_moisture?.toFixed(0) + '%' || '--');
+
+                        // Update sensor status indicators
+                        updateSensorStatus(latest);
+                        
+                        // Update last seen
+                        document.getElementById('last-seen').textContent = 'Last updated: ' + new Date(latest.created_at).toLocaleString();
+                        
+                    } else {
+                        document.getElementById('sensor-data-table').innerHTML = `
+                            <tr>
+                                <td colspan="7" class="text-center">No data available</td>
+                            </tr>
                         `;
-                        tableBody.appendChild(row);
-                    });
-                    
-                    console.log('Charts and table updated successfully');
-                } else {
-                    console.warn('No history data available');
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching history data:', error);
-            });
-        
-        // Update device status
-        const deviceElement = document.getElementById('device-status');
-        if (deviceElement) {
-            deviceElement.textContent = isConnected ? 'Online' : 'Offline';
-            deviceElement.className = isConnected ? 'status-badge online' : 'status-badge offline';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching sensor data:', error);
+                    showError('Failed to load sensor data: ' + (error.message || 'Unknown error'));
+                    hideLoading();
+                    document.getElementById('sensor-data-table').innerHTML = `
+                        <tr>
+                            <td colspan="7" class="text-center text-danger">Error loading data</td>
+                        </tr>
+                    `;
+                });
         }
-    }
 
     // Animate value changes
     function animateValue(elementId, newValue) {
