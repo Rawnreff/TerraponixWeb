@@ -283,32 +283,6 @@
             });
     }
     
-    document.addEventListener('DOMContentLoaded', function() {
-        loadSettings();
-        
-        // Form submission
-        document.getElementById('settings-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const settings = {
-                temp_threshold: parseFloat(document.getElementById('temp-threshold').value),
-                light_threshold: parseInt(document.getElementById('light-threshold').value),
-                water_level_threshold: parseInt(document.getElementById('water-threshold').value),
-                ph_min: parseFloat(document.getElementById('ph-min').value),
-                ph_max: parseFloat(document.getElementById('ph-max').value),
-                auto_mode: document.getElementById('auto-mode').checked
-            };
-            
-            axios.post('/api/settings', settings)
-                .then(response => {
-                    alert('Settings saved successfully!');
-                })
-                .catch(error => {
-                    console.error('Error saving settings:', error);
-                    alert('Failed to save settings');
-                });
-        });
-    });
 </script>
 @endsection
 
@@ -319,12 +293,44 @@ let currentDeviceId = null;
 // Load devices on page load
 document.addEventListener('DOMContentLoaded', function() {
     loadDevices();
+    loadSettings();
+    
+    // Setup auto-refresh intervals for real-time data
     setInterval(loadDevices, 30000); // Refresh devices every 30 seconds
+    setInterval(function() {
+        if (currentDeviceId) {
+            loadDeviceSettings();
+            loadActuatorStatus();
+        }
+    }, 5000); // Refresh device data every 5 seconds
+    
+    // Form submission
+    document.getElementById('settings-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const settings = {
+            temp_threshold: parseFloat(document.getElementById('temp-threshold').value),
+            light_threshold: parseInt(document.getElementById('light-threshold').value),
+            water_level_threshold: parseInt(document.getElementById('water-threshold').value),
+            ph_min: parseFloat(document.getElementById('ph-min').value),
+            ph_max: parseFloat(document.getElementById('ph-max').value),
+            auto_mode: document.getElementById('auto-mode').checked
+        };
+        
+        axios.post('/api/settings', settings)
+            .then(response => {
+                showAlert('Settings saved successfully!', 'success');
+            })
+            .catch(error => {
+                console.error('Error saving settings:', error);
+                showAlert('Failed to save settings', 'danger');
+            });
+    });
 });
 
 async function loadDevices() {
     try {
-        const response = await axios.get('/api/v1/devices');
+        const response = await axios.get('/api/devices');
         const select = document.getElementById('device-select');
         
         if (response.data.status === 'success') {
@@ -333,7 +339,7 @@ async function loadDevices() {
             response.data.data.forEach(device => {
                 const option = document.createElement('option');
                 option.value = device.id;
-                option.textContent = `${device.name} (${device.location})`;
+                option.textContent = `${device.name} (${device.location || 'No location'})`;
                 select.appendChild(option);
             });
             
@@ -356,36 +362,44 @@ async function loadDeviceSettings() {
     currentDeviceId = deviceId;
     
     try {
-        // Load device settings
-        const settingsResponse = await axios.get(`/api/v1/devices/${deviceId}/settings`);
-        const deviceResponse = await axios.get(`/api/v1/devices`);
+        // Load device info with settings and actuator status
+        const deviceResponse = await axios.get(`/api/device-info/${deviceId}`);
         
-        if (settingsResponse.data.status === 'success') {
-            const settings = settingsResponse.data.data;
+        if (deviceResponse.data.status === 'success') {
+            const device = deviceResponse.data.data;
+            const settings = device.settings;
+            const actuatorStatus = device.actuator_status;
             
             // Populate form fields
-            document.getElementById('temp-threshold').value = settings.temp_threshold || '';
-            document.getElementById('light-threshold').value = settings.light_threshold || '';
-            document.getElementById('water-threshold').value = settings.water_level_threshold || '';
-            document.getElementById('ph-min').value = settings.ph_min || '';
-            document.getElementById('ph-max').value = settings.ph_max || '';
-            document.getElementById('auto-fan').checked = settings.auto_mode || false;
-            document.getElementById('auto-curtain').checked = settings.auto_mode || false;
-            document.getElementById('auto-pump').checked = settings.auto_mode || false;
-        }
-        
-        // Load device info
-        const device = deviceResponse.data.data.find(d => d.id == deviceId);
-        if (device) {
+            if (settings) {
+                document.getElementById('temp-threshold').value = settings.temp_threshold || '';
+                document.getElementById('light-threshold').value = settings.light_threshold || '';
+                document.getElementById('water-threshold').value = settings.water_level_threshold || '';
+                document.getElementById('ph-min').value = settings.ph_min || '';
+                document.getElementById('ph-max').value = settings.ph_max || '';
+                document.getElementById('auto-fan').checked = settings.auto_mode || false;
+                document.getElementById('auto-curtain').checked = settings.auto_mode || false;
+                document.getElementById('auto-pump').checked = settings.auto_mode || false;
+            }
+            
+            // Update device info display
             document.getElementById('device-status').textContent = device.status || 'Unknown';
             document.getElementById('device-status').className = `status-badge ${device.status === 'online' ? 'online' : 'offline'}`;
             document.getElementById('device-last-seen').textContent = device.last_seen ? new Date(device.last_seen).toLocaleString() : '-';
-            document.getElementById('device-ip').textContent = device.ip_address || '-';
-            document.getElementById('device-location').textContent = device.location || '-';
+            
+            // Update device details if they exist in UI
+            if (document.getElementById('device-ip')) {
+                document.getElementById('device-ip').textContent = device.ip_address || '-';
+            }
+            if (document.getElementById('device-location')) {
+                document.getElementById('device-location').textContent = device.location || '-';
+            }
+            
+            // Update actuator status display
+            if (actuatorStatus) {
+                updateActuatorDisplay(actuatorStatus);
+            }
         }
-        
-        // Load current actuator status
-        loadActuatorStatus();
         
     } catch (error) {
         console.error('Error loading device settings:', error);
@@ -397,25 +411,46 @@ async function loadActuatorStatus() {
     if (!currentDeviceId) return;
     
     try {
-        const response = await axios.get(`/api/v1/devices/${currentDeviceId}/actuator-status`);
+        const response = await axios.get('/api/actuator-status');
         
         if (response.data.status === 'success') {
             const status = response.data.data;
-            
-            // Update curtain position
-            document.getElementById('manual-curtain').value = status.curtain_position || 50;
-            updateCurtainValue();
-            
-            // Update button states
-            updateFanButtons(status.fan_status);
-            updatePumpButtons(status.water_pump_status);
-            
-            // Update auto mode status
-            document.getElementById('auto-mode-status').textContent = status.auto_mode ? 'Enabled' : 'Disabled';
-            document.getElementById('auto-mode-status').className = `status-badge ${status.auto_mode ? 'online' : ''}`;
+            updateActuatorDisplay(status);
         }
     } catch (error) {
         console.error('Error loading actuator status:', error);
+    }
+}
+
+// Function to update actuator display with real-time data
+function updateActuatorDisplay(actuatorStatus) {
+    if (!actuatorStatus) return;
+    
+    // Update curtain status
+    if (document.getElementById('current-curtain-pos')) {
+        document.getElementById('current-curtain-pos').textContent = actuatorStatus.curtain_position + '%';
+    }
+    if (document.getElementById('manual-curtain')) {
+        document.getElementById('manual-curtain').value = actuatorStatus.curtain_position;
+        updateCurtainValue();
+    }
+    
+    // Update fan status
+    updateFanButtons(actuatorStatus.fan_status);
+    
+    // Update pump status  
+    updatePumpButtons(actuatorStatus.water_pump_status);
+    
+    // Update auto mode status
+    if (document.getElementById('auto-mode-status')) {
+        document.getElementById('auto-mode-status').textContent = actuatorStatus.auto_mode ? 'Enabled' : 'Disabled';
+        document.getElementById('auto-mode-status').className = `status-badge ${actuatorStatus.auto_mode ? 'online' : 'offline'}`;
+    }
+    
+    // Update last updated timestamp
+    if (document.getElementById('actuator-last-update')) {
+        const lastUpdate = new Date(actuatorStatus.last_updated || actuatorStatus.updated_at);
+        document.getElementById('actuator-last-update').textContent = lastUpdate.toLocaleString();
     }
 }
 

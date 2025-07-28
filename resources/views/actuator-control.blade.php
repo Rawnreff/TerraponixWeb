@@ -223,41 +223,56 @@
         });
     }
     
-    // Add actuator log
+    // Load actuator history from database
+    function loadActuatorHistory() {
+        axios.get('/api/actuator-history?device_id=1&limit=10')
+            .then(response => {
+                const logs = response.data.data;
+                const logsTable = document.getElementById('actuator-logs');
+                
+                if (logs.length === 0) {
+                    logsTable.innerHTML = '<tr><td colspan="3" class="text-center">No logs available</td></tr>';
+                    return;
+                }
+                
+                logsTable.innerHTML = '';
+                
+                logs.forEach(log => {
+                    const row = document.createElement('tr');
+                    const date = new Date(log.created_at);
+                    
+                    let actionText = '';
+                    let newVal = log.new_value[log.actuator_type];
+                    
+                    switch(log.actuator_type) {
+                        case 'curtain':
+                            actionText = `Set to ${newVal}%`;
+                            break;
+                        case 'fan':
+                        case 'water_pump':
+                            actionText = newVal ? 'Turned ON' : 'Turned OFF';
+                            break;
+                    }
+                    
+                    row.innerHTML = `
+                        <td>${date.toLocaleString()}</td>
+                        <td>${log.actuator_type.replace('_', ' ').toUpperCase()}</td>
+                        <td><span class="badge bg-${log.triggered_by === 'auto' ? 'warning' : 'primary'}">${log.triggered_by}</span> ${actionText}</td>
+                    `;
+                    
+                    logsTable.appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading actuator history:', error);
+                showAlert('Failed to load actuator history', 'warning');
+            });
+    }
+
+    // Add actuator log (for real-time updates)
     function addActuatorLog(type, value) {
-        const logsTable = document.getElementById('actuator-logs');
-        
-        // Remove "no logs" message if present
-        if (logsTable.children.length === 1 && logsTable.children[0].children.length === 1) {
-            logsTable.innerHTML = '';
-        }
-        
-        const now = new Date();
-        const row = document.createElement('tr');
-        
-        let actionText = '';
-        switch(type) {
-            case 'curtain':
-                actionText = `Set to ${value}%`;
-                break;
-            case 'fan':
-            case 'water_pump':
-                actionText = value ? 'Turned ON' : 'Turned OFF';
-                break;
-        }
-        
-        row.innerHTML = `
-            <td>${now.toLocaleTimeString()}</td>
-            <td>${type.replace('_', ' ').toUpperCase()}</td>
-            <td>${actionText}</td>
-        `;
-        
-        logsTable.insertBefore(row, logsTable.firstChild);
-        
-        // Keep only the last 10 logs
-        if (logsTable.children.length > 10) {
-            logsTable.removeChild(logsTable.lastChild);
-        }
+        // Refresh the history to get updated data from database
+        loadActuatorHistory();
     }
     
     // Toggle auto mode
@@ -308,9 +323,11 @@
     // Initialize
     document.addEventListener('DOMContentLoaded', function() {
         updateActuatorStatus();
+        loadActuatorHistory();
         
-        // Update status every 3 seconds
+        // Update status every 3 seconds and history every 10 seconds
         setInterval(updateActuatorStatus, 3000);
+        setInterval(loadActuatorHistory, 10000);
         
         // Auto mode switch event
         document.getElementById('auto-mode-switch').addEventListener('change', toggleAutoMode);

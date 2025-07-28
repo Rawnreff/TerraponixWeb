@@ -19,8 +19,11 @@ Route::middleware(['web'])->group(function () {
         Route::get('/latest-sensor-data', [SensorDataController::class, 'getLatestData']);
         Route::get('/actuator-status', [ActuatorController::class, 'getStatus']);
         Route::post('/control-actuator', [ActuatorController::class, 'control']);
+        Route::get('/actuator-history', [ActuatorController::class, 'getHistory']);
         Route::get('/sensor-history', [SensorDataController::class, 'getHistory']);
         Route::get('/settings', [SettingsController::class, 'getSettings']);
         Route::post('/settings', [SettingsController::class, 'updateSettings']);
+        Route::get('/devices', [SettingsController::class, 'getDevices']);
+        Route::get('/device-info/{deviceId?}', [SettingsController::class, 'getDeviceInfo']);
     });
 });

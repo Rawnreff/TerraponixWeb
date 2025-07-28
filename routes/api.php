@@ -29,6 +29,7 @@ Route::prefix('v1')->group(function() {
     // Actuator control endpoints
     Route::get('/devices/{device}/actuator-status', [ActuatorController::class, 'status']);
     Route::post('/actuator/control', [ActuatorController::class, 'control']);
+    Route::get('/actuator/history', [ActuatorController::class, 'history']);
 });
 
 // Additional simple endpoints without v1 prefix for testing
