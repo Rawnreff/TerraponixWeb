@@ -944,7 +944,7 @@ body {
         
         // CO2 Chart
         const co2Ctx = document.getElementById('co2Chart').getContext('2d');
-        co2Chart = createChart(co2Ctx, 'CO₂ Level (ppm)', chartColors.co2, 'bar');
+        co2Chart = createChart(co2Ctx, 'CO₂ Level (ppm)', chartColors.co2, 'line');
         
         // Soil Moisture Chart
         const soilCtx = document.getElementById('soilMoistureChart').getContext('2d');
