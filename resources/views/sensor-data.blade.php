@@ -56,6 +56,14 @@
             <div class="sensor-label">Temperature</div>
             <div class="sensor-value" id="temperature-value">-- °C</div>
             <div class="sensor-status" id="temp-status">Loading...</div>
+            <div class="sensor-visualization">
+                <div class="thermometer">
+                    <div class="thermometer-bulb"></div>
+                    <div class="thermometer-stem">
+                        <div class="thermometer-fluid" id="temperature-visual"></div>
+                    </div>
+                </div>
+            </div>
             <i class="bi bi-thermometer-half card-icon"></i>
             <div class="card-pulse temperature-pulse"></div>
         </div>
@@ -65,6 +73,12 @@
             <div class="sensor-label">Humidity</div>
             <div class="sensor-value" id="humidity-value">-- %</div>
             <div class="sensor-status" id="humidity-status">Loading...</div>
+            <div class="sensor-visualization">
+                <div class="humidity-droplet">
+                    <div class="droplet" id="humidity-visual"></div>
+                    <div class="ripples"></div>
+                </div>
+            </div>
             <i class="bi bi-droplet-half card-icon"></i>
             <div class="card-pulse humidity-pulse"></div>
         </div>
@@ -74,21 +88,14 @@
             <div class="sensor-label">pH Level</div>
             <div class="sensor-value" id="ph-value">--</div>
             <div class="sensor-status" id="ph-status">Loading...</div>
+            <div class="sensor-visualization">
+                <div class="ph-scale">
+                    <div class="ph-indicator" id="ph-visual"></div>
+                </div>
+            </div>
             <i class="bi bi-speedometer2 card-icon"></i>
             <div class="card-pulse ph-pulse"></div>
         </div>
-    </div>
-</div>
-
-<div class="chart-card mb-4">
-    <div class="chart-header">
-        <h5 class="chart-title">
-            <i class="bi bi-graph-up me-2"></i> Sensor Data History
-            <span class="chart-period ms-2" id="time-range">(Last week)</span>
-        </h5>
-    </div>
-    <div class="chart-body">
-        <canvas id="sensorHistoryChart" height="100"></canvas>
     </div>
 </div>
 
@@ -103,6 +110,12 @@
                     <div class="metric-value" id="light-value">-- lux</div>
                     <div class="metric-status" id="light-status">Loading...</div>
                 </div>
+                <div class="sensor-visualization">
+                    <div class="light-visual-container">
+                        <div class="sun" id="light-visual"></div>
+                        <div class="sun-rays"></div>
+                    </div>
+                </div>
                 <div class="metric-label">Current Light Level</div>
             </div>
         </div>
@@ -115,8 +128,12 @@
             <div class="card-body-modern">
                 <div class="metric-display">
                     <div class="metric-value" id="water-level-value">-- %</div>
-                    <div class="progress-modern mt-2">
-                        <div class="progress-bar-modern water-progress" id="water-level-bar" style="width: 0%"></div>
+                    <div class="metric-status" id="water-status">Loading...</div>
+                </div>
+                <div class="sensor-visualization">
+                    <div class="water-tank">
+                        <div class="water-level" id="water-visual"></div>
+                        <div class="water-waves"></div>
                     </div>
                 </div>
                 <div class="metric-label">Tank Capacity</div>
@@ -133,7 +150,43 @@
                     <div class="metric-value" id="co2-value">-- ppm</div>
                     <div class="metric-status" id="co2-status">Optimal: 400-800 ppm</div>
                 </div>
+                <div class="sensor-visualization">
+                    <div class="co2-cloud">
+                        <div class="cloud" id="co2-visual"></div>
+                    </div>
+                </div>
                 <div class="metric-label">Air Quality</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="modern-card soil-moisture-card">
+            <div class="card-header-modern">
+                <i class="bi bi-moisture me-2"></i> Soil Moisture Visualization
+            </div>
+            <div class="card-body-modern">
+                <div class="metric-display">
+                    <div class="metric-value" id="soil-moisture-value">-- %</div>
+                    <div class="metric-status" id="soil-moisture-status">Loading...</div>
+                </div>
+                <div class="soil-visualization-container">
+                    <div class="soil-visualization">
+                        <div class="soil-layer">
+                            <div class="soil-moisture-level" id="soil-moisture-visual"></div>
+                        </div>
+                        <div class="grass-layer" id="grass-visual">
+                            <div class="grass-blade"></div>
+                            <div class="grass-blade"></div>
+                            <div class="grass-blade"></div>
+                            <div class="grass-blade"></div>
+                            <div class="grass-blade"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="metric-label">Moisture Content</div>
             </div>
         </div>
     </div>
@@ -156,9 +209,9 @@
                         <th>Humidity (%)</th>
                         <th>pH</th>
                         <th>Light (lux)</th>
-                        <th>Water Level</th>
+                        <th>Water Level (%)</th>
                         <th>CO₂ (ppm)</th>
-                        <th>Soil Moisture</th>
+                        <th>Soil Moisture (%)</th>
                     </tr>
                 </thead>
                 <tbody id="sensor-data-table">
@@ -309,13 +362,13 @@ body {
     background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(10px);
     border-radius: var(--border-radius);
-    padding: 2rem;
+    padding: 1.5rem;
     box-shadow: var(--card-shadow);
     border: 1px solid rgba(255, 255, 255, 0.2);
     position: relative;
     overflow: hidden;
     transition: var(--transition);
-    height: 160px;
+    height: 300px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -357,6 +410,12 @@ body {
     opacity: 0.8;
 }
 
+.sensor-card .sensor-visualization {
+    height: 80px;
+    margin-top: 0.5rem;
+    position: relative;
+}
+
 .card-pulse {
     position: absolute;
     bottom: 0;
@@ -379,11 +438,6 @@ body {
 .light-card .card-icon { color: #f39c12; }
 .light-pulse { background: var(--warning-gradient); }
 
-@keyframes pulse {
-    0%, 100% { opacity: 0.6; }
-    50% { opacity: 1; }
-}
-
 /* Modern Card Styles */
 .modern-card {
     background: rgba(255, 255, 255, 0.9);
@@ -393,7 +447,7 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.2);
     transition: var(--transition);
     overflow: hidden;
-    height: 200px;
+    height: 400px;
 }
 
 .modern-card:hover {
@@ -421,7 +475,7 @@ body {
 
 .metric-display {
     text-align: center;
-    margin-bottom: auto;
+    margin-bottom: 0.5rem;
 }
 
 .metric-value {
@@ -435,7 +489,7 @@ body {
 .metric-status {
     font-size: 0.85rem;
     color: #6c757d;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
 
 .metric-label {
@@ -447,91 +501,303 @@ body {
     text-align: center;
 }
 
-/* Progress Bar Styles */
-.progress-modern {
-    height: 8px;
-    background: rgba(0,0,0,0.05);
-    border-radius: 20px;
-    overflow: hidden;
+.sensor-visualization {
+    margin: 1rem 0;
+    height: 100px;
     position: relative;
 }
 
-.progress-bar-modern {
-    height: 100%;
-    border-radius: 20px;
-    transition: width 0.6s ease;
+/* Temperature Visualization */
+.thermometer {
+    width: 40px;
+    height: 100px;
+    margin: 0 auto;
     position: relative;
+    bottom: 10px;
 }
 
-.water-progress {
-    background: var(--info-gradient);
-}
-
-.soil-progress {
-    background: var(--success-gradient);
-}
-
-.curtain-progress {
-    background: var(--primary-gradient);
-}
-
-/* Chart Styles */
-.chart-card {
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(10px);
-    border-radius: var(--border-radius);
-    box-shadow: var(--card-shadow);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: var(--transition);
-    overflow: hidden;
-    margin-bottom: 2rem;
-}
-
-.chart-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--card-hover-shadow);
-}
-
-.chart-header {
-    padding: 1.5rem;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: rgba(248, 249, 250, 0.5);
-}
-
-.chart-title {
-    font-weight: 600;
-    color: #2c3e50;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.chart-period {
-    font-size: 0.85rem;
-    color: #6c757d;
-}
-
-.chart-body {
-    padding: 1.5rem;
-}
-
-/* Toast Styles */
-.toast-modern {
-    border: none;
-    border-radius: var(--border-radius);
-    backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.95);
-    box-shadow: var(--card-shadow);
-}
-
-.connection-dot {
-    width: 12px;
-    height: 12px;
+.thermometer-bulb {
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    margin-right: 0.5rem;
+    background: #e74c3c;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+}
+
+.thermometer-stem {
+    width: 20px;
+    height: 80px;
+    background: #f5f5f5;
+    border-radius: 10px;
+    position: absolute;
+    top: 0;
+    left: 10px;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.thermometer-fluid {
+    width: 100%;
+    height: 0%;
+    background: linear-gradient(to top, #e74c3c, #c0392b);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    transition: height 0.5s ease;
+}
+
+/* Humidity Visualization */
+.humidity-droplet {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.droplet {
+    width: 60px;
+    height: 60px;
+    background: #3498db;
+    border-radius: 50% 50% 50% 50%/60% 60% 40% 40%;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    transform: scale(0.5);
+    transition: transform 0.5s ease;
+}
+
+.ripples {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid rgba(52, 152, 219, 0.5);
+    top: 0;
+    left: 0;
+    animation: ripple 2s infinite;
+}
+
+@keyframes ripple {
+    0% { transform: scale(0.5); opacity: 1; }
+    100% { transform: scale(1); opacity: 0; }
+}
+
+/* pH Visualization */
+.ph-scale {
+    width: 100%;
+    height: 20px;
+    background: linear-gradient(to right, #ff0000, #ff9900, #ccff00, #33cc33, #0099ff, #6633cc, #9900cc);
+    border-radius: 10px;
+    margin: 30px auto 0;
+    position: relative;
+}
+
+.ph-indicator {
+    width: 20px;
+    height: 30px;
+    background: #fff;
+    border-radius: 3px;
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 5px rgba(0,0,0,0.2);
+    transition: left 0.5s ease;
+}
+
+/* Light Visualization */
+.light-visual-container {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.sun {
+    width: 50px;
+    height: 50px;
+    background: #f39c12;
+    border-radius: 50%;
+    position: absolute;
+    top: 25px;
+    left: 25px;
+    box-shadow: 0 0 20px #f39c12;
+    transition: all 0.5s ease;
+}
+
+.sun-rays {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    top: 0;
+    left: 0;
+}
+
+.sun-rays:before, .sun-rays:after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: #f39c12;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+}
+
+.sun-rays:after {
+    transform: translateY(-50%) rotate(90deg);
+}
+
+/* Water Level Visualization */
+.water-tank {
+    width: 80px;
+    height: 100px;
+    margin: 0 auto;
+    background: #f5f5f5;
+    border-radius: 5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.water-level {
+    width: 100%;
+    height: 0%;
+    background: linear-gradient(to top, #1abc9c, #16a085);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    transition: height 0.5s ease;
+}
+
+.water-waves {
+    position: absolute;
+    width: 200%;
+    height: 10px;
+    background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 120 10" xmlns="http://www.w3.org/2000/svg"><path d="M0,5 Q30,10 60,5 T120,5" fill="none" stroke="%2316a085" stroke-width="2"/></svg>') repeat-x;
+    background-size: 60px 10px;
+    bottom: 0;
+    left: 0;
+    animation: water-wave 2s linear infinite;
+}
+
+@keyframes water-wave {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-60px); }
+}
+
+/* CO2 Visualization */
+.co2-cloud {
+    width: 100px;
+    height: 60px;
+    margin: 20px auto 0;
+    position: relative;
+}
+
+.cloud {
+    width: 60px;
+    height: 40px;
+    background: #ecf0f1;
+    border-radius: 40px;
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    transition: all 0.5s ease;
+}
+
+.cloud:before, .cloud:after {
+    content: '';
+    position: absolute;
+    background: #ecf0f1;
+    border-radius: 50%;
+}
+
+.cloud:before {
+    width: 30px;
+    height: 30px;
+    top: -15px;
+    left: -10px;
+}
+
+.cloud:after {
+    width: 40px;
+    height: 40px;
+    top: -20px;
+    right: -10px;
+}
+
+/* Soil Moisture Visualization */
+.soil-moisture-card {
+    height: 364px;
+}
+
+.soil-visualization-container {
+    height: 150px;
+    margin: 1rem 0;
+    position: relative;
+}
+
+.soil-visualization {
+    width: 100%;
+    height: 120px;
+    position: relative;
+    overflow: hidden;
+}
+
+.soil-layer {
+    width: 100%;
+    height: 100%;
+    background: #8B4513;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.soil-moisture-level {
+    width: 100%;
+    height: 0%;
+    background: linear-gradient(to top, #5D4037, #8D6E63);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    transition: height 0.5s ease;
+}
+
+.grass-layer {
+    width: 100%;
+    height: 40px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    justify-content: space-around;
+    padding: 0 20px;
+}
+
+.grass-blade {
+    width: 4px;
+    height: 0;
+    background: linear-gradient(to top, #4CAF50, #8BC34A);
+    border-radius: 2px;
+    position: relative;
+    transform-origin: bottom center;
+    animation: grass-grow 1s ease-out forwards;
+}
+
+.grass-blade:nth-child(1) { animation-delay: 0.1s; }
+.grass-blade:nth-child(2) { animation-delay: 0.3s; }
+.grass-blade:nth-child(3) { animation-delay: 0.2s; }
+.grass-blade:nth-child(4) { animation-delay: 0.4s; }
+.grass-blade:nth-child(5) { animation-delay: 0.25s; }
+
+@keyframes grass-grow {
+    0% { height: 0; transform: scaleY(0); }
+    80% { transform: scaleY(1.1); }
+    100% { height: 30px; transform: scaleY(1); }
 }
 
 /* Table Styles */
@@ -564,259 +830,28 @@ body {
     
     .sensor-card, .modern-card {
         height: auto;
-        min-height: 120px;
+        min-height: 200px;
     }
     
     .sensor-card .sensor-value, .metric-value {
         font-size: 1.8rem;
     }
     
-    .chart-card {
-        margin-bottom: 1.5rem;
-    }
-    
-    .chart-header {
-        flex-direction: column;
-        gap: 0.5rem;
-        text-align: center;
+    .soil-moisture-card {
+        height: auto;
     }
 }
 </style>
 @endsection
 
 @section('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
     // Global variables
-    let sensorHistoryChart;
     let currentDays = 7;
     let updateInterval;
     let isConnected = true;
     
-    // Chart color schemes
-    const chartColors = {
-        temperature: {
-            border: '#e74c3c',
-            background: 'rgba(231, 76, 60, 0.1)',
-            gradient: ['#e74c3c', '#c0392b']
-        },
-        humidity: {
-            border: '#3498db',
-            background: 'rgba(52, 152, 219, 0.1)',
-            gradient: ['#3498db', '#2980b9']
-        },
-        ph: {
-            border: '#9b59b6',
-            background: 'rgba(155, 89, 182, 0.1)',
-            gradient: ['#9b59b6', '#8e44ad']
-        },
-        waterLevel: {
-            border: '#1abc9c',
-            background: 'rgba(26, 188, 156, 0.1)',
-            gradient: ['#1abc9c', '#16a085']
-        },
-        light: {
-            border: '#f39c12',
-            background: 'rgba(243, 156, 18, 0.1)',
-            gradient: ['#f39c12', '#e67e22']
-        },
-        co2: {
-            border: '#2ecc71',
-            background: 'rgba(46, 204, 113, 0.1)',
-            gradient: ['#2ecc71', '#27ae60']
-        }
-    };
-    
-    // Initialize charts
-    function initCharts() {
-        const ctx = document.getElementById('sensorHistoryChart').getContext('2d');
-        sensorHistoryChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [
-                    {
-                        label: 'Temperature (°C)',
-                        data: [],
-                        borderColor: chartColors.temperature.border,
-                        backgroundColor: chartColors.temperature.background,
-                        borderWidth: 3,
-                        tension: 0.4,
-                        pointRadius: 4,
-                        pointHoverRadius: 6,
-                        pointBackgroundColor: chartColors.temperature.border,
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        yAxisID: 'y'
-                    },
-                    {
-                        label: 'Humidity (%)',
-                        data: [],
-                        borderColor: chartColors.humidity.border,
-                        backgroundColor: chartColors.humidity.background,
-                        borderWidth: 3,
-                        tension: 0.4,
-                        pointRadius: 4,
-                        pointHoverRadius: 6,
-                        pointBackgroundColor: chartColors.humidity.border,
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        yAxisID: 'y1'
-                    },
-                    {
-                        label: 'pH Level',
-                        data: [],
-                        borderColor: chartColors.ph.border,
-                        backgroundColor: chartColors.ph.background,
-                        borderWidth: 3,
-                        tension: 0.4,
-                        pointRadius: 4,
-                        pointHoverRadius: 6,
-                        pointBackgroundColor: chartColors.ph.border,
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        yAxisID: 'y2'
-                    },
-                    {
-                        label: 'CO₂ (ppm)',
-                        data: [],
-                        borderColor: chartColors.co2.border,
-                        backgroundColor: chartColors.co2.background,
-                        borderWidth: 3,
-                        tension: 0.4,
-                        pointRadius: 4,
-                        pointHoverRadius: 6,
-                        pointBackgroundColor: chartColors.co2.border,
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        yAxisID: 'y3'
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: {
-                            usePointStyle: true,
-                            padding: 20
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        titleColor: '#ffffff',
-                        bodyColor: '#ffffff',
-                        borderColor: '#6c757d',
-                        borderWidth: 1,
-                        cornerRadius: 8,
-                        displayColors: true,
-                        callbacks: {
-                            title: function(context) {
-                                return 'Date: ' + context[0].label;
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        display: true,
-                        grid: {
-                            display: false
-                        },
-                        ticks: {
-                            color: '#6c757d',
-                            font: {
-                                size: 11
-                            }
-                        }
-                    },
-                    y: {
-                        display: true,
-                        position: 'left',
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.05)',
-                            borderDash: [5, 5]
-                        },
-                        ticks: {
-                            color: '#6c757d',
-                            font: {
-                                size: 11
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: 'Temperature (°C)',
-                            color: '#6c757d'
-                        }
-                    },
-                    y1: {
-                        display: true,
-                        position: 'right',
-                        grid: {
-                            drawOnChartArea: false,
-                        },
-                        ticks: {
-                            color: '#6c757d',
-                            font: {
-                                size: 11
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: 'Humidity (%)',
-                            color: '#6c757d'
-                        }
-                    },
-                    y2: {
-                        display: true,
-                        position: 'right',
-                        grid: {
-                            drawOnChartArea: false,
-                        },
-                        ticks: {
-                            color: '#6c757d',
-                            font: {
-                                size: 11
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: 'pH Level',
-                            color: '#6c757d'
-                        },
-                        min: 0,
-                        max: 14
-                    },
-                    y3: {
-                        display: true,
-                        position: 'right',
-                        grid: {
-                            drawOnChartArea: false,
-                        },
-                        ticks: {
-                            color: '#6c757d',
-                            font: {
-                                size: 11
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: 'CO₂ (ppm)',
-                            color: '#6c757d'
-                        }
-                    }
-                },
-                animation: {
-                    duration: 1000,
-                    easing: 'easeInOutQuart'
-                }
-            }
-        });
-    }
-
     // Show loading state with modern animation
     function showLoading() {
         document.getElementById('loading-indicator').classList.remove('d-none');
@@ -898,19 +933,84 @@ body {
             lightStatus.style.color = '#27ae60';
         }
 
-        // CO2 status
-        const co2 = data.co2_level;
-        const co2Status = document.getElementById('co2-status');
-        if (co2 < 400) {
-            co2Status.textContent = 'Low - Below 400 ppm';
-            co2Status.style.color = '#e67e22';
-        } else if (co2 > 800) {
-            co2Status.textContent = 'High - Above 800 ppm';
-            co2Status.style.color = '#e74c3c';
+        // Water Level status
+        const waterLevel = data.water_level ? (data.water_level / 2000 * 100) : 0;
+        const waterStatus = document.getElementById('water-status');
+        if (waterLevel < 20) {
+            waterStatus.textContent = 'Very Low - Below 20%';
+            waterStatus.style.color = '#e74c3c';
+        } else if (waterLevel < 40) {
+            waterStatus.textContent = 'Low - Below 40%';
+            waterStatus.style.color = '#e67e22';
+        } else if (waterLevel > 80) {
+            waterStatus.textContent = 'High - Above 80%';
+            waterStatus.style.color = '#27ae60';
         } else {
-            co2Status.textContent = 'Optimal: 400-800 ppm';
-            co2Status.style.color = '#27ae60';
+            waterStatus.textContent = 'Normal: 40-80%';
+            waterStatus.style.color = '#27ae60';
         }
+
+        // Soil Moisture status
+        const soilMoisture = data.soil_moisture ? (data.soil_moisture / 4095 * 100) : 0;
+        const soilMoistureStatus = document.getElementById('soil-moisture-status');
+        if (soilMoisture < 30) {
+            soilMoistureStatus.textContent = 'Too Dry - Below 30%';
+            soilMoistureStatus.style.color = '#e67e22';
+        } else if (soilMoisture > 70) {
+            soilMoistureStatus.textContent = 'Too Wet - Above 70%';
+            soilMoistureStatus.style.color = '#e67e22';
+        } else {
+            soilMoistureStatus.textContent = 'Optimal: 30-70%';
+            soilMoistureStatus.style.color = '#27ae60';
+        }
+    }
+
+    // Update visualizations
+    function updateVisualizations(data) {
+        // Temperature visualization (0-50°C range)
+        const temp = data.temperature;
+        const tempPercentage = Math.min(Math.max((temp / 50) * 100, 0), 100);
+        document.getElementById('temperature-visual').style.height = tempPercentage + '%';
+
+        // Humidity visualization
+        const humidity = data.humidity;
+        document.getElementById('humidity-visual').style.transform = `scale(${humidity / 100})`;
+
+        // pH visualization (0-14 scale)
+        const ph = data.ph_value;
+        const phPosition = Math.min(Math.max((ph / 14) * 100, 0), 100);
+        document.getElementById('ph-visual').style.left = phPosition + '%';
+
+        // Light visualization
+        const light = data.light_intensity;
+        const lightScale = Math.min(Math.max(light / 1000, 0.3), 1);
+        document.getElementById('light-visual').style.transform = `scale(${lightScale})`;
+        document.getElementById('light-visual').style.boxShadow = `0 0 ${20 * lightScale}px #f39c12`;
+
+        // Water Level visualization
+        const waterLevel = data.water_level ? (data.water_level / 4000 * 100) : 0;
+        document.getElementById('water-visual').style.height = waterLevel + '%';
+
+        // CO2 visualization (400-1200 ppm range)
+        const co2 = data.co2_level;
+        const co2Scale = Math.min(Math.max((co2 - 400) / 800, 0.5), 1.5);
+        document.getElementById('co2-visual').style.transform = `scale(${co2Scale})`;
+
+        // Soil Moisture visualization
+        const soilMoisture = data.soil_moisture ? (data.soil_moisture / 4095 * 100) : 0;
+        document.getElementById('soil-moisture-visual').style.height = soilMoisture + '%';
+        
+        // Grass visualization
+        const grassBlades = document.querySelectorAll('.grass-blade');
+        grassBlades.forEach(blade => {
+            if (soilMoisture > 30) {
+                blade.style.height = '30px';
+                blade.style.animation = 'grass-grow 1s ease-out forwards';
+            } else {
+                blade.style.height = '10px';
+                blade.style.animation = 'none';
+            }
+        });
     }
 
     // Update dashboard data
@@ -934,7 +1034,8 @@ body {
                     
                     // Populate table with all returned data
                     sensorData.forEach(data => {
-                        const waterLevelPercentage = data.water_level ? ((data.water_level / 3000) * 100).toFixed(1) : '--';
+                        const waterLevelPercentage = data.water_level ? ((data.water_level / 2000) * 100).toFixed(1) : '--';
+                        const soilMoisturePercentage = data.soil_moisture ? (data.soil_moisture / 4095 * 100).toFixed(1) : '--';
                         
                         const row = document.createElement('tr');
                         row.innerHTML = `
@@ -945,14 +1046,15 @@ body {
                             <td>${data.light_intensity || '--'}</td>
                             <td>${waterLevelPercentage}%</td>
                             <td>${data.co2_level || '--'}</td>
-                            <td>${data.soil_moisture || '--'}</td>
+                            <td>${soilMoisturePercentage}%</td>
                         `;
                         tableBody.appendChild(row);
                     });
 
                     // Get the latest reading (first item in array)
                     const latest = sensorData[0];
-                    const waterLevelPercentage = latest.water_level ? ((latest.water_level / 2300) * 100).toFixed(1) : 0;
+                    const waterLevelPercentage = latest.water_level ? ((latest.water_level / 2000) * 100).toFixed(1) : 0;
+                    const soilMoisturePercentage = latest.soil_moisture ? (latest.soil_moisture / 4095 * 100).toFixed(1) : 0;
                     
                     // Update summary cards
                     animateValue('temperature-value', latest.temperature?.toFixed(1) + ' °C');
@@ -960,11 +1062,14 @@ body {
                     animateValue('ph-value', latest.ph_value?.toFixed(2) || '--');
                     animateValue('light-value', latest.light_intensity?.toFixed(0) + ' lux' || '--');
                     animateValue('water-level-value', waterLevelPercentage + '%' || '--');
-                    animateProgressBar('water-level-bar', waterLevelPercentage || 0);
                     animateValue('co2-value', latest.co2_level?.toFixed(0) + ' ppm' || '--');
+                    animateValue('soil-moisture-value', soilMoisturePercentage + '%' || '--');
 
                     // Update sensor status indicators
                     updateSensorStatus(latest);
+                    
+                    // Update visualizations
+                    updateVisualizations(latest);
                     
                     // Update last seen
                     document.getElementById('last-seen').textContent = 'Last updated: ' + new Date(latest.created_at).toLocaleString();
@@ -987,33 +1092,6 @@ body {
                     </tr>
                 `;
             });
-
-        // Fetch sensor history for charts
-        axios.get('/api/sensor-data/latest', { params: { days: currentDays } })
-            .then(response => {
-                console.log('History data response:', response.data);
-                if (response.data.status === "success" && response.data.data && response.data.data.length > 0) {
-                    const history = response.data.data;
-                    const labels = history.map(item => {
-                        const date = new Date(item.date);
-                        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                    });
-                    
-                    // Update chart data
-                    sensorHistoryChart.data.labels = labels;
-                    sensorHistoryChart.data.datasets[0].data = history.map(item => item.avg_temp);
-                    sensorHistoryChart.data.datasets[1].data = history.map(item => item.avg_humidity);
-                    sensorHistoryChart.data.datasets[2].data = history.map(item => item.avg_ph || 7.0);
-                    sensorHistoryChart.data.datasets[3].data = history.map(item => item.avg_co2 || 0);
-                    sensorHistoryChart.update();
-                    
-                } else {
-                    console.warn('No history data available');
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching history data:', error);
-            });
     }
 
     // Animate value changes
@@ -1028,18 +1106,9 @@ body {
         }
     }
 
-    // Animate progress bars
-    function animateProgressBar(elementId, percentage) {
-        const element = document.getElementById(elementId);
-        if (element) {
-            element.style.width = percentage + '%';
-        }
-    }
-
-    // Change time range for charts
+    // Change time range for data
     function changeTimeRange(days, label) {
         currentDays = days;
-        document.getElementById('time-range').textContent = `(${label})`;
         document.getElementById('time-range-label').textContent = label;
         updateDashboard();
     }
@@ -1062,7 +1131,6 @@ body {
 
     // Initialize everything
     document.addEventListener('DOMContentLoaded', function() {
-        initCharts();
         updateDashboard();
         
         // Update data every 5 seconds

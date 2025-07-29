@@ -765,15 +765,15 @@ body {
     function initCharts() {
         // Temperature Chart
         const tempCtx = document.getElementById('temperatureChart').getContext('2d');
-        temperatureChart = createChart(tempCtx, 'Temperature (°C)', chartColors.temperature, 'line');
+        temperatureChart = createChart(tempCtx, 'Temperature (°C)', chartColors.temperature, 'area');
         
         // Humidity Chart
         const humidityCtx = document.getElementById('humidityChart').getContext('2d');
-        humidityChart = createChart(humidityCtx, 'Humidity (%)', chartColors.humidity, 'line');
+        humidityChart = createChart(humidityCtx, 'Humidity (%)', chartColors.humidity, 'area');
         
         // pH Chart
         const phCtx = document.getElementById('phChart').getContext('2d');
-        phChart = createChart(phCtx, 'pH Level', chartColors.ph, 'line');
+        phChart = createChart(phCtx, 'pH Level', chartColors.ph, 'area');
         
         // Water Level Chart
         const waterCtx = document.getElementById('waterLevelChart').getContext('2d');
@@ -994,7 +994,7 @@ body {
                     const data = response.data.data[0];
                     console.log('Processing sensor data:', data);
                     
-                    // Update main sensor values with animation
+                    // Update main sensor values with animation 
                     animateValue('temperature-value', data.temperature.toFixed(1) + ' °C');
                     animateValue('humidity-value', data.humidity.toFixed(1) + ' %');
                     animateValue('ph-value', data.ph_value.toFixed(2));
@@ -1005,13 +1005,15 @@ body {
                     const co2Level = data.co2_level || 0;
                     const soilMoisture = data.soil_moisture || 0;
                     
-                    const waterLevelPercentage = waterLevel ? ((waterLevel / 3000) * 100).toFixed(1) : 0;
+                    const waterLevelPercentage = waterLevel ? ((waterLevel / 2000) * 100).toFixed(1) : 0;
                     animateValue('water-level-value', waterLevelPercentage + '%');
                     animateProgressBar('water-level-bar', waterLevelPercentage);
                     
                     animateValue('co2-value', co2Level + ' ppm');
-                    animateValue('soil-moisture-value', soilMoisture.toFixed(1) + '%');
-                    animateProgressBar('soil-moisture-bar', soilMoisture);
+
+                    const soilMoisturePercent = (soilMoisture / 4095 * 100).toFixed(1);
+                    animateValue('soil-moisture-value', soilMoisturePercent + '%');
+                    animateProgressBar('soil-moisture-bar', soilMoisturePercent);
                     
                     // Update sensor status indicators
                     updateSensorStatus(data);
@@ -1044,7 +1046,9 @@ body {
                         return item.avg_water_level ? (item.avg_water_level / 2300 * 100) : 0;
                     }));
                     updateChart(co2Chart, labels, history.map(item => item.avg_co2_level || 0));
-                    updateChart(soilMoistureChart, labels, history.map(item => item.avg_soil_moisture || 0));
+                    updateChart(soilMoistureChart, labels, history.map(item => {
+                        return item.avg_soil_moisture ? (item.avg_soil_moisture / 4095 * 100) : 0;
+                    }));
                     
                     console.log('Charts updated successfully');
                 } else {
