@@ -64,7 +64,9 @@ class DashboardController extends Controller
                     DB::raw('AVG(humidity) as avg_humidity'),
                     DB::raw('AVG(ph_value) as avg_ph'),
                     DB::raw('AVG(light_intensity) as avg_light'),
-                    DB::raw('AVG(water_level) as avg_water_level')
+                    DB::raw('AVG(water_level) as avg_water_level'),
+                    DB::raw('AVG(co2_level) as avg_co2_level'),
+                    DB::raw('AVG(soil_moisture) as avg_soil_moisture')
                 )
                 ->where('created_at', '>=', $startDate)
                 ->groupBy(DB::raw('DATE(created_at)'))
@@ -79,7 +81,9 @@ class DashboardController extends Controller
                     'avg_humidity' => round($item->avg_humidity, 1),
                     'avg_ph' => round($item->avg_ph, 2),
                     'avg_light' => round($item->avg_light, 0),
-                    'avg_water_level' => round($item->avg_water_level, 1)
+                    'avg_water_level' => round($item->avg_water_level, 1),
+                    'avg_co2_level' => round($item->avg_co2_level, 1),
+                    'avg_soil_moisture' => round($item->avg_soil_moisture, 1)
                 ];
             });
 

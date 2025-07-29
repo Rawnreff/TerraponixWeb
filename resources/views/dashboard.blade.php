@@ -296,95 +296,6 @@
     </div>
 </div>
 
-<!-- System Control Panel -->
-<div class="control-panel mb-5">
-    <div class="section-header mb-4">
-        <h3 class="section-title">
-            <i class="bi bi-gear text-primary me-2"></i>
-            System Status & Control
-        </h3>
-        <p class="text-muted">Monitor and control greenhouse automation systems</p>
-    </div>
-    
-    <div class="row g-4">
-        <div class="col-lg-3 col-md-6">
-            <div class="control-card">
-                <div class="control-header">
-                    <i class="bi bi-cpu"></i>
-                    <span>Device Status</span>
-                </div>
-                <div class="control-body">
-                    <div class="status-indicator">
-                        <div id="device-status" class="status-badge">
-                            <div class="placeholder-shimmer"></div>
-                        </div>
-                    </div>
-                    <div class="status-info">
-                        <small>Last seen: <span id="last-seen">Loading...</span></small>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-lg-3 col-md-6">
-            <div class="control-card">
-                <div class="control-header">
-                    <i class="bi bi-window"></i>
-                    <span>Curtain Control</span>
-                </div>
-                <div class="control-body">
-                    <div class="status-indicator">
-                        <div id="curtain-status" class="status-badge">
-                            <div class="placeholder-shimmer"></div>
-                        </div>
-                    </div>
-                    <div class="progress-modern mt-2">
-                        <div class="progress-bar-modern curtain-progress" id="curtain-progress"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-lg-3 col-md-6">
-            <div class="control-card">
-                <div class="control-header">
-                    <i class="bi bi-fan"></i>
-                    <span>Ventilation</span>
-                </div>
-                <div class="control-body">
-                    <div class="status-indicator">
-                        <div id="fan-status" class="status-badge">
-                            <div class="placeholder-shimmer"></div>
-                        </div>
-                    </div>
-                    <div class="status-info">
-                        <small>Air circulation system</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-lg-3 col-md-6">
-            <div class="control-card">
-                <div class="control-header">
-                    <i class="bi bi-droplet"></i>
-                    <span>Water Pump</span>
-                </div>
-                <div class="control-body">
-                    <div class="status-indicator">
-                        <div id="pump-status" class="status-badge">
-                            <div class="placeholder-shimmer"></div>
-                        </div>
-                    </div>
-                    <div class="status-info">
-                        <small>Irrigation system</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Connection Status Toast -->
 <div class="position-fixed bottom-0 end-0 p-3">
     <div id="connection-status" class="toast toast-modern hide" role="alert">
@@ -760,80 +671,6 @@ body {
     padding: 1.5rem;
 }
 
-/* Control Panel Styles */
-.control-panel .section-header {
-    text-align: center;
-    margin-bottom: 3rem;
-}
-
-.control-card {
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(10px);
-    border-radius: var(--border-radius);
-    box-shadow: var(--card-shadow);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: var(--transition);
-    overflow: hidden;
-    height: 100%;
-    position: relative;
-    z-index: auto;    
-}
-
-.control-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--card-hover-shadow);
-}
-
-.control-header {
-    padding: 1.5rem 1.5rem 1rem;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 600;
-    color: #2c3e50;
-}
-
-.control-body {
-    padding: 1rem 1.5rem 1.5rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: calc(100% - 70px);
-}
-
-.status-indicator {
-    text-align: center;
-    margin-bottom: auto;
-}
-
-.status-badge {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-weight: 600;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    transition: var(--transition);
-}
-
-.status-badge.online {
-    background: var(--success-gradient);
-    color: white;
-}
-
-.status-badge.offline {
-    background: var(--danger-gradient);
-    color: white;
-}
-
-.status-info {
-    text-align: center;
-    font-size: 0.8rem;
-    color: #6c757d;
-}
-
 /* Toast Styles */
 .toast-modern {
     border: none;
@@ -942,9 +779,9 @@ body {
         const waterCtx = document.getElementById('waterLevelChart').getContext('2d');
         waterLevelChart = createChart(waterCtx, 'Water Level (%)', chartColors.waterLevel, 'area');
         
-        // CO2 Chart
+        // CO2 Chart - Fixed to use the same data as main sensor card
         const co2Ctx = document.getElementById('co2Chart').getContext('2d');
-        co2Chart = createChart(co2Ctx, 'CO₂ Level (ppm)', chartColors.co2, 'line');
+        co2Chart = createChart(co2Ctx, 'CO₂ Level (ppm)', chartColors.co2, 'area');
         
         // Soil Moisture Chart
         const soilCtx = document.getElementById('soilMoistureChart').getContext('2d');
@@ -1179,9 +1016,6 @@ body {
                     // Update sensor status indicators
                     updateSensorStatus(data);
                     
-                    // Update last seen
-                    document.getElementById('last-seen').textContent = new Date(data.created_at).toLocaleString();
-                    
                     console.log('Sensor data updated successfully');
                 } else {
                     console.warn('No sensor data received or empty data array');
@@ -1205,11 +1039,11 @@ body {
                     // Update individual charts
                     updateChart(temperatureChart, labels, history.map(item => item.avg_temp));
                     updateChart(humidityChart, labels, history.map(item => item.avg_humidity));
-                    updateChart(phChart, labels, history.map(item => item.avg_ph || 7.0));
+                    updateChart(phChart, labels, history.map(item => item.avg_ph || 0));
                     updateChart(waterLevelChart, labels, history.map(item => {
                         return item.avg_water_level ? (item.avg_water_level / 2300 * 100) : 0;
                     }));
-                    updateChart(co2Chart, labels, history.map(item => item.avg_co2 || 0));
+                    updateChart(co2Chart, labels, history.map(item => item.avg_co2_level || 0));
                     updateChart(soilMoistureChart, labels, history.map(item => item.avg_soil_moisture || 0));
                     
                     console.log('Charts updated successfully');
@@ -1220,45 +1054,6 @@ body {
             .catch(error => {
                 console.error('Error fetching history data:', error);
             });
-        
-        // Fetch actuator status
-        axios.get('/api/dashboard/actuator-status')
-            .then(response => {
-                console.log('Actuator status response:', response.data);
-                if (response.data.success) {
-                    const status = response.data.data;
-                    
-                    // Update curtain status
-                    const curtainPos = status.curtain_position || 0;
-                    const curtainElement = document.getElementById('curtain-status');
-                    curtainElement.textContent = curtainPos + '% ' + (curtainPos > 50 ? 'Open' : 'Closed');
-                    curtainElement.className = 'status-badge ' + (curtainPos > 50 ? 'online' : 'offline');
-                    animateProgressBar('curtain-progress', curtainPos);
-                    
-                    // Update fan status
-                    const fanElement = document.getElementById('fan-status');
-                    fanElement.textContent = status.fan_status ? 'Online' : 'Offline';
-                    fanElement.className = status.fan_status ? 'status-badge online' : 'status-badge offline';
-                    
-                    // Update pump status
-                    const pumpElement = document.getElementById('pump-status');
-                    pumpElement.textContent = status.water_pump_status ? 'Active' : 'Standby';
-                    pumpElement.className = status.water_pump_status ? 'status-badge online' : 'status-badge offline';
-                    
-                    console.log('Actuator status updated successfully');
-                } else {
-                    console.warn('Failed to get actuator status');
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching actuator status:', error);
-                console.error('Error details:', error.response);
-            });
-
-        // Update device status
-        const deviceElement = document.getElementById('device-status');
-        deviceElement.textContent = isConnected ? 'Online' : 'Offline';
-        deviceElement.className = isConnected ? 'status-badge online' : 'status-badge offline';
     }
 
     // Animate value changes
