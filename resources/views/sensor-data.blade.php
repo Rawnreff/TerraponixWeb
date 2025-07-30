@@ -988,7 +988,7 @@ body {
         document.getElementById('light-visual').style.boxShadow = `0 0 ${20 * lightScale}px #f39c12`;
 
         // Water Level visualization
-        const waterLevel = data.water_level ? (data.water_level / 4000 * 100) : 0;
+        const waterLevel = data.water_level ? (data.water_level / 2000 * 100) : 0;
         document.getElementById('water-visual').style.height = waterLevel + '%';
 
         // CO2 visualization (400-1200 ppm range)
